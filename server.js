@@ -161,35 +161,6 @@ io.sockets.on("connection", function(socket) {
 			});
 		}
 	});
-	socket.on("fetch-recipient", function(data) {
-		if(!empty(data)) {
-			var conversation_id = data.conversation_id;
-			var conversation_file = conversations_folder + generate_conversation_file_name(conversation_id) + ".txt";
-			var anonymous_id = data.anonymous_id;
-			if(fs.existsSync(conversation_file)) {
-				fs.readFile(conversation_file, { encoding:"utf-8" }, function(error, json) {
-					if(error) {
-						console.log(error);
-					}
-					else {
-						if(!empty(json)) {
-							var info = JSON.parse(json);
-							var clients = info.clients;
-							var recipient_public_key;
-							var anonymous_ids = Object.keys(clients);
-							var public_key = clients[anonymous_id]["public_key"];
-							for(i = 0; i < anonymous_ids.length; i++) {
-								if(clients[anonymous_ids[i]]["public_key"] != public_key) {
-									recipient_public_key = clients[anonymous_ids[i]]["public_key"];
-								}
-							}
-							io.to(info.clients[data.anonymous_id]["socket_id"]).emit("save-recipient", { public_key:recipient_public_key });
-						}
-					}
-				});
-			}
-		}
-	});
 });
 
 // AES encrypt.

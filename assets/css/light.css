@@ -484,3 +484,13 @@ button {
 	color:rgb(100,100,100);
 	display:inline-block;
 }
+.notification-title-wrapper {
+	font-size:16px;
+	font-weight:bold;
+	color:rgb(100,100,100);
+}
+.notification-description-wrapper {
+	margin-top:10px;
+	font-size:14px;
+	color:rgb(100,100,100);
+}

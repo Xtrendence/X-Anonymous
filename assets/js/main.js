@@ -29,7 +29,9 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		}
 	});
 	socket.on("new-user", function(data) {
-		socket.emit("fetch-recipient", { conversation_id:get_conversation_id(), anonymous_id:get_anonymous_id() });
+		if(data.public_key != get_public_key()) {
+			window.localStorage.setItem(get_conversation_id() + "recipient-public-key", data.public_key);
+		}
 	});
 	socket.on("new-message", function(data) {
 		if(!empty(data)) {
@@ -66,9 +68,6 @@ document.addEventListener("DOMContentLoaded", function(e) {
 				document.getElementsByClassName("input-field-overlay")[0].style.display = "none";
 				document.getElementsByClassName("input-field")[0].classList.remove("disabled");
 				document.getElementsByClassName("input-button")[0].classList.remove("disabled");
-				if(empty(get_recipient_public_key())) {
-					socket.emit("fetch-recipient", { conversation_id:get_conversation_id(), anonymous_id:get_anonymous_id() });
-				}
 			}, 500);
 			
 		}
