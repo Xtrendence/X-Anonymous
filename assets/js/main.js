@@ -28,9 +28,20 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			document.getElementsByClassName("messages-list")[0].scrollTop = document.getElementsByClassName("messages-list")[0].scrollHeight;
 		}
 	});
+	socket.on("save-recipient", function(data) {
+		if(!empty(data)) {
+			if(data.public_key != get_public_key()) {
+				window.localStorage.setItem(get_conversation_id() + "recipient-public-key", data.public_key);
+				document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].value = get_recipient_public_key();
+				document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].style.height = document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].scrollHeight + "px";
+			}
+		}
+	});
 	socket.on("new-user", function(data) {
 		if(data.public_key != get_public_key()) {
 			window.localStorage.setItem(get_conversation_id() + "recipient-public-key", data.public_key);
+			document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].value = get_recipient_public_key();
+			document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].style.height = document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].scrollHeight + "px";
 		}
 		socket.emit("announce-existence", { conversation_id:get_conversation_id(), public_key:get_public_key() });
 	});
@@ -66,22 +77,21 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	socket.on("count-clients", function(data) {
 		if(data.clients == 2) {
 			setTimeout(function() {
-				document.getElementsByClassName("input-field-overlay")[0].style.display = "none";
-				document.getElementsByClassName("input-field")[0].classList.remove("disabled");
-				document.getElementsByClassName("input-button")[0].classList.remove("disabled");
+				if(document.getElementsByClassName("input-field-overlay")[0].style.display == "block") {
+					document.getElementsByClassName("input-field-overlay")[0].style.display = "none";
+					document.getElementsByClassName("input-field")[0].classList.remove("disabled");
+					document.getElementsByClassName("input-button")[0].classList.remove("disabled");
+				}
 			}, 500);
 		}
 		else {
-			document.getElementsByClassName("input-field-overlay")[0].style.display = "block";
-			document.getElementsByClassName("input-field")[0].classList.add("disabled");
-			document.getElementsByClassName("input-field")[0].blur();
-			document.getElementsByClassName("input-button")[0].classList.add("disabled");
+			if(document.getElementsByClassName("input-field-overlay")[0].style.display == "none") {
+				document.getElementsByClassName("input-field-overlay")[0].style.display = "block";
+				document.getElementsByClassName("input-field")[0].classList.add("disabled");
+				document.getElementsByClassName("input-field")[0].blur();
+				document.getElementsByClassName("input-button")[0].classList.add("disabled");
+			}
 		}
-	});
-	socket.on("save-recipient", function(data) {
-		window.localStorage.setItem(get_conversation_id() + "recipient-public-key", data.public_key);
-		document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].value = get_recipient_public_key();
-		document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].style.height = document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].scrollHeight + "px";
 	});
 	// Settings functionality.
 	document.getElementsByClassName("icon-wrapper settings")[0].addEventListener("click", function() {
@@ -140,7 +150,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			keys_wrapper.getElementsByClassName("anonymous-id")[0].value = get_anonymous_id();
 			keys_wrapper.getElementsByClassName("public-key")[0].value = get_public_key();
 			keys_wrapper.getElementsByClassName("private-key")[0].value = get_private_key();
-			if(get_recipient_public_key() !== "[object Object]") {
+			if(get_recipient_public_key() !== "[object Object]" && get_recipient_public_key() !== null) {
 				keys_wrapper.getElementsByClassName("recipient-public-key")[0].value = get_recipient_public_key();
 			}
 			else {
@@ -150,6 +160,11 @@ document.addEventListener("DOMContentLoaded", function(e) {
 				keys_wrapper.getElementsByTagName("textarea")[i].style.height = keys_wrapper.getElementsByTagName("textarea")[i].scrollHeight + "px";
 			}
 		}
+	});
+	// Share button functionality.
+	document.getElementsByClassName("icon-wrapper share")[0].addEventListener("click", function() {
+		copy_to_clipboard(window.location.href);
+		notify("Copied", "The URL of this chat has been copied to your clipboard. Share it to talk to someone anonymously.", "rgb(250,250,250)", 4000);
 	});
 	// Clicking to dismiss keys pane.
 	document.getElementsByClassName("messages-list")[0].addEventListener("click", function(e) {
@@ -179,26 +194,29 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		document.getElementsByClassName("add-button-border")[0].classList.add("animated");
 		document.getElementsByClassName("add-button")[0].innerHTML = document.getElementsByClassName("add-button")[0].innerHTML.replace("Create Conversation", "Loading...");
 		document.getElementsByClassName("add-button")[0].style.padding = "0 20px 0 30px";
+		if(document.getElementsByClassName("settings-choice key-size active").length > 0) {
+			var key_size = document.getElementsByClassName("settings-choice key-size active")[0].textContent;
+		}
+		else {
+			var key_size = 4096;
+		}
 		var xhr = new XMLHttpRequest();
 		xhr.onreadystatechange = async function() {
 			if(xhr.readyState == XMLHttpRequest.DONE) {
 				var chat_id = xhr.responseText;
-				if(document.getElementsByClassName("settings-choice key-size active").length > 0) {
-					var size = document.getElementsByClassName("settings-choice key-size active")[0].textContent;
-				}
-				else {
-					var size = 4096;
-				}
-				var keys = await generate_keys(parseInt(size), chat_id);
+				var keys = await generate_keys(parseInt(key_size), chat_id);
 				setInterval(function() {
-					if(!empty(window.localStorage.getItem(chat_id + "public-key")) && !empty(chat_id + "private-key")) {
+					if(!empty(window.localStorage.getItem(chat_id + "public-key")) && !empty(window.localStorage.getItem(chat_id + "private-key"))) {
 						window.location.href = "./chat?id=" + chat_id;
 					}
 				}, 500);
 			}
 		}
 		xhr.open("POST", "/create", true);
-		xhr.send();
+		xhr.setRequestHeader("Content-Type", "application/json");
+		xhr.send(JSON.stringify({
+			key_size:key_size
+		}));
 	});
 	// Send message.
 	document.getElementsByClassName("input-button")[0].addEventListener("click", function() {
@@ -263,7 +281,8 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	// Join conversation.
 	async function join_conversation() {
 		if(empty(get_public_key()) && empty(get_private_key())) {
-			var keys = await generate_keys(4096, get_conversation_id());
+			var key_size = get_key_size();
+			var keys = await generate_keys(key_size, get_conversation_id());
 		}
 		var joining = setInterval(function() {
 			if(!empty(get_public_key()) && !empty(get_private_key())) {
@@ -304,6 +323,10 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	// Get conversation ID.
 	function get_conversation_id() {
 		return get_url_query("id");
+	}
+	// Get key size.
+	function get_key_size() {
+		return get_conversation_id().substring(0, 4);
 	}
 	// Get anonymous ID.
 	function get_anonymous_id() {
@@ -416,6 +439,17 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	function random_int(min, max) {
 		return Math.floor(Math.random() * (max - min) + min);
 	}
+	// Copy text to clipboard.
+	function copy_to_clipboard(text) {
+		var temp = document.createElement("textarea");
+		temp.classList.add("select");
+		temp.classList.add("hidden");
+		document.body.appendChild(temp);
+		temp.textContent = text;
+		temp.select();
+		document.execCommand("copy");
+		temp.remove();
+	}
 	function initialize() {
 		if(detect_mobile()) {
 			document.getElementsByTagName("body")[0].setAttribute("id", "mobile");
@@ -446,6 +480,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			document.getElementsByClassName("add-button")[0].classList.add("disabled");
 			document.getElementsByClassName("add-button")[0].innerHTML = document.getElementsByClassName("add-button")[0].innerHTML.replace("Create Conversation", "Loading...");
 			document.getElementsByClassName("add-button")[0].style.padding = "0 20px 0 30px";
+			document.getElementsByClassName("input-field-overlay")[0].style.display = "block";
 			join_conversation();
 		}
 	}
@@ -478,7 +513,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		notification.style.visibility = "visible";
 		notification.getElementsByClassName("notification-bubble")[0].style.left = "20px";
 		setTimeout(function() {
-			notification.getElementsByClassName("notification-bubble")[0].style.left = "-400px";
+			notification.getElementsByClassName("notification-bubble")[0].style.left = "-600px";
 			setTimeout(function() {
 				notification.remove();
 				if(area.innerHTML == "") {

@@ -40,22 +40,25 @@ app.get("/chat", function(req, res) {
 	res.render("home");
 });
 app.post("/create", function(req, res) {
-	if(fs.existsSync(conversations_folder)) {
-		var conversation_id = generate_conversation_id();
-		var conversation_file = conversations_folder + generate_conversation_file_name(conversation_id) + ".txt";
-		while(fs.existsSync(conversation_file)) {
-			conversation_id = generate_conversation_id();
-			conversation_file = conversations_folder + generate_conversation_file_name(conversation_id) + ".txt";
+	if(!empty(req.body.key_size)) {
+		var key_size = req.body.key_size;
+		if(fs.existsSync(conversations_folder)) {
+			var conversation_id = generate_conversation_id(key_size);
+			var conversation_file = conversations_folder + generate_conversation_file_name(conversation_id) + ".txt";
+			while(fs.existsSync(conversation_file)) {
+				conversation_id = generate_conversation_id(key_size);
+				conversation_file = conversations_folder + generate_conversation_file_name(conversation_id) + ".txt";
+			}
+			var info = { time_created:epoch(), time_modified:epoch(), conversation_id:conversation_id, clients:{ }};
+			fs.writeFile(conversation_file, JSON.stringify(info), { flag:"w" }, function(error) {
+				if(error) {
+					console.log(error);
+				}
+				else {
+					res.send(conversation_id);
+				}
+			});
 		}
-		var info = { time_created:epoch(), time_modified:epoch(), conversation_id:conversation_id, clients:{ }};
-		fs.writeFile(conversation_file, JSON.stringify(info), { flag:"w" }, function(error) {
-			if(error) {
-				console.log(error);
-			}
-			else {
-				res.send(conversation_id);
-			}
-		});
 	}
 });
 
@@ -151,7 +154,7 @@ io.sockets.on("connection", function(socket) {
 	});
 	socket.on("announce-existence", function(data) {
 		if(!empty(data)) {
-			io.to(data.conversation_id).emit("new-user", { public_key:data.public_key });
+			io.to(data.conversation_id).emit("save-recipient", { public_key:data.public_key });
 		}
 	});
 	socket.on("count-clients", function(data) {
@@ -196,8 +199,8 @@ function generate_token() {
 	return bcrypt.hashSync(salt1 + salt2, 10);
 }
 // Generate a conversation ID.
-function generate_conversation_id() {
-	return epoch() + generate_token() + generate_token();
+function generate_conversation_id(key_size) {
+	return key_size + epoch() + generate_token() + generate_token();
 }
 // Generate an anonymous ID.
 function generate_anonymous_id(conversation_id) {

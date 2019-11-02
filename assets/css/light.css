@@ -494,3 +494,6 @@ button {
 	font-size:14px;
 	color:rgb(100,100,100);
 }
+.notification-description {
+	line-height:25px;
+}
