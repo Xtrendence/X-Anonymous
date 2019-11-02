@@ -2,11 +2,18 @@
 
 ### How to use:
 
+## Manual:
+
 1. Go to https://glitch.com and sign up.
 2. Create a new project, and select "Clone from Git Repo."
 3. Copy and paste the following URL into the input field: https://github.com/Xtrendence/X-Anonymous.git
 4. Press "OK," and let it finish loading.
 5. Click on "Show" on the top left, and select "In a New Window."
+
+## Automatic:
+
+1. Go to https://glitch.com, sign up, and log in.
+2. Open https://glitch.com/edit/#!/remix/clone-from-repo?REPO_URL=https://github.com/Xtrendence/X-Anonymous
 
 ### What does this do?
 
