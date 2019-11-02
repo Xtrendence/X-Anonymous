@@ -14,6 +14,7 @@
 
 1. Go to https://glitch.com, sign up, and log in.
 2. Open https://glitch.com/edit/#!/remix/clone-from-repo?REPO_URL=https://github.com/Xtrendence/X-Anonymous
+3. Click on "Show" on the top left, and select "In a New Window."
 
 #### Side Note:
 
