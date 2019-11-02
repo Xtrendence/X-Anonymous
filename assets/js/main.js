@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		}
 		else {
 			settings_wrapper.style.visibility = "visible";
-			settings_wrapper.style.right = "103px";
+			settings_wrapper.style.right = "20px";
 		}
 	});
 	for(i = 0; i < document.getElementsByClassName("settings-choice").length; i++) {
@@ -120,6 +120,8 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	// Create conversation.
 	document.getElementsByClassName("add-button")[0].addEventListener("click", function() {
 		document.getElementsByClassName("add-button-border")[0].classList.add("animated");
+		document.getElementsByClassName("add-button")[0].innerHTML = document.getElementsByClassName("add-button")[0].innerHTML.replace("Create Conversation", "Loading...");
+		document.getElementsByClassName("add-button")[0].style.padding = "0 20px 0 30px";
 		var xhr = new XMLHttpRequest();
 		xhr.onreadystatechange = async function() {
 			if(xhr.readyState == XMLHttpRequest.DONE) {
@@ -145,13 +147,14 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	document.getElementsByClassName("input-button")[0].addEventListener("click", function() {
 		var value = document.getElementsByClassName("input-field")[0].value;
 		if(!empty(value) && !empty(value.trim())) {
+			var key_size = window.localStorage.getItem(get_conversation_id() + "key-size");
 			var text = value.trim();
 			var length = text.length;
-			if(length < 500) {
+			var bits = length * 16;
+			var safety = 160;
+			// RSA can't encrypt content that's bigger than the key size.
+			if(length < (key_size - safety)) {
 				send_message(text);
-			}
-			else {
-					
 			}
 		}
 	});
@@ -211,6 +214,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		var crypt = new JSEncrypt({ default_key_size:size });
 		var public_key = crypt.getPublicKey();
 		var private_key = crypt.getPrivateKey();
+		window.localStorage.setItem(chat_id + "key-size", size);
 		window.localStorage.setItem(chat_id + "public-key", public_key);
 		window.localStorage.setItem(chat_id + "private-key", private_key);
 		var keys = { public_key:public_key, private_key:private_key };
@@ -358,6 +362,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			document.getElementsByClassName("add-button-border")[0].classList.add("animated");
 			document.getElementsByClassName("add-button")[0].classList.add("disabled");
 			document.getElementsByClassName("add-button")[0].innerHTML = document.getElementsByClassName("add-button")[0].innerHTML.replace("Create Conversation", "Loading...");
+			document.getElementsByClassName("add-button")[0].style.padding = "0 20px 0 30px";
 			join_conversation();
 		}
 	}
