@@ -62,16 +62,20 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	});
 	socket.on("count-clients", function(data) {
 		if(data.clients == 2) {
-			document.getElementsByClassName("input-field-overlay")[0].style.display = "none";
-			document.getElementsByClassName("input-field")[0].classList.remove("disabled");
-			document.getElementsByClassName("input-button")[0].classList.remove("disabled");
-			if(empty(get_recipient_public_key())) {
-				socket.emit("fetch-recipient", { conversation_id:get_conversation_id(), anonymous_id:get_anonymous_id() });
-			}
+			setTimeout(function() {
+				document.getElementsByClassName("input-field-overlay")[0].style.display = "none";
+				document.getElementsByClassName("input-field")[0].classList.remove("disabled");
+				document.getElementsByClassName("input-button")[0].classList.remove("disabled");
+				if(empty(get_recipient_public_key())) {
+					socket.emit("fetch-recipient", { conversation_id:get_conversation_id(), anonymous_id:get_anonymous_id() });
+				}
+			}, 500);
+			
 		}
 		else {
 			document.getElementsByClassName("input-field-overlay")[0].style.display = "block";
 			document.getElementsByClassName("input-field")[0].classList.add("disabled");
+			document.getElementsByClassName("input-field")[0].blur();
 			document.getElementsByClassName("input-button")[0].classList.add("disabled");
 		}
 	});
@@ -172,7 +176,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	});
 	// Create conversation.
 	document.getElementsByClassName("add-button")[0].addEventListener("click", function() {
-		notify("Creating Conversation", "This might take more than 20 seconds.");
+		notify("Creating Conversation", "This might take more than 20 seconds.", "rgb(250,250,250)", 4000);
 		document.getElementsByClassName("add-button-border")[0].classList.add("animated");
 		document.getElementsByClassName("add-button")[0].innerHTML = document.getElementsByClassName("add-button")[0].innerHTML.replace("Create Conversation", "Loading...");
 		document.getElementsByClassName("add-button")[0].style.padding = "0 20px 0 30px";

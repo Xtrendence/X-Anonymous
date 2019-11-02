@@ -175,7 +175,7 @@ io.sockets.on("connection", function(socket) {
 						if(!empty(json)) {
 							var info = JSON.parse(json);
 							var clients = info.clients;
-							var recipient_public_key = new Object();
+							var recipient_public_key;
 							var anonymous_ids = Object.keys(clients);
 							var public_key = clients[anonymous_id]["public_key"];
 							for(i = 0; i < anonymous_ids.length; i++) {
