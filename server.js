@@ -1,8 +1,6 @@
-if(empty(process.env.PORT)) {
-	const port = 80;
-}
-else {
-	const port = process.env.PORT;
+var port = 80;
+if(!empty(process.env.PORT)) {
+	var port = process.env.PORT;
 }
 
 const express = require("express");
