@@ -49,7 +49,7 @@
 		</div>
 		<div class="settings-wrapper">
 			<span class="settings-title">RSA Key Size</span>
-			<span class="settings-description">The bigger the key size, the more secure yet slower the chat app will be. Weaker systems may not even be able to use anything above 2048. 2048 is supposed to be secure until 2030.</span>
+			<span class="settings-description">The bigger the key size, the more secure (but slower) the chat app will be. Weaker systems may not even be able to use anything above 2048. 2048 is supposed to be secure until 2030.</span>
 			<button class="settings-choice key-size 1024">1024</button>
 			<button class="settings-choice key-size 2048">2048</button>
 			<button class="settings-choice key-size 3072">3072</button>
@@ -115,8 +115,9 @@
 				</svg>
 			</div>
 			<div class="messages-list"></div>
-			<input class="input-field" type="text" placeholder="Say something anonymously...">
-			<button class="input-button">
+			<span class="input-field-overlay noselect">Other user not connected.</span>
+			<input class="input-field disabled" type="text" placeholder="Say something anonymously...">
+			<button class="input-button disabled">
 				<svg class="send-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M476 3.2L12.5 270.6c-18.1 10.4-15.8 35.6 2.2 43.2L121 358.4l287.3-253.2c5.5-4.9 13.3 2.6 8.6 8.3L176 407v80.5c0 23.6 28.5 32.9 42.5 15.8L282 426l124.6 52.2c14.2 6 30.4-2.9 33-18.2l72-432C515 7.8 493.3-6.8 476 3.2z"/>
 					<defs>
 						<linearGradient id="gradient-send">

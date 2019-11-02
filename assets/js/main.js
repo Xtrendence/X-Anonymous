@@ -60,6 +60,18 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			document.getElementsByClassName("messages-list")[0].scrollTop = document.getElementsByClassName("messages-list")[0].scrollHeight;
 		}
 	});
+	socket.on("count-clients", function(data) {
+		if(data.clients == 2) {
+			document.getElementsByClassName("input-field-overlay")[0].style.display = "none";
+			document.getElementsByClassName("input-field")[0].classList.remove("disabled");
+			document.getElementsByClassName("input-button")[0].classList.remove("disabled");
+		}
+		else {
+			document.getElementsByClassName("input-field-overlay")[0].style.display = "block";
+			document.getElementsByClassName("input-field")[0].classList.add("disabled");
+			document.getElementsByClassName("input-button")[0].classList.add("disabled");
+		}
+	});
 	socket.on("save-recipient", function(data) {
 		window.localStorage.setItem(get_conversation_id() + "recipient-public-key", data.public_key);
 	});
@@ -177,8 +189,12 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			if(!empty(get_public_key()) && !empty(get_private_key())) {
 				socket.emit("join-conversation", { conversation_id:get_conversation_id(), anonymous_id:get_anonymous_id(), public_key:get_public_key() });
 				clearInterval(joining);
+				// Check if other user is connected.
+				setInterval(function() {
+					socket.emit("count-clients", { conversation_id:get_conversation_id() });
+				}, 2000);
 			}
-		}, 500);	
+		}, 500);
 	}
 	// Send message.
 	function send_message(text) {

@@ -34,6 +34,10 @@ button {
 .disabled {
 	pointer-events:none;
 }
+.grayed {
+	pointer-events:none;
+	opacity:0.3;
+}
 
 .icon-wrapper.settings {
 	background:rgb(250,250,250);
@@ -288,6 +292,7 @@ button {
 	height:63px;
 	padding:0 20px 0 20px;
 	position:absolute;
+	z-index:3;
 	font-size:16px;
 	color:rgb(100,100,100);
 	left:20px;
@@ -299,6 +304,19 @@ button {
 }
 .input-field:focus {
 	box-shadow:var(--shadow-darker);
+}
+.input-field-overlay {
+	background:rgb(250,250,250);
+	line-height:63px;
+	padding:0 20px 0 20px;
+	position:absolute;
+	font-size:16px;
+	z-index:4;
+	color:#8464f0;
+	left:20px;
+	bottom:20px;
+	width:calc(100% - 164px);
+	border-radius:30px;
 }
 .input-button {
 	background:rgb(250,250,250);

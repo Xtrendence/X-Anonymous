@@ -126,6 +126,18 @@ io.sockets.on("connection", function(socket) {
 			io.to(data.conversation_id).emit("new-message", data);
 		}
 	});
+	socket.on("count-clients", function(data) {
+		if(!empty(data)) {
+			io.in(data.conversation_id).clients(function(error, clients) {
+				if(error) {
+					console.log(error);
+				}
+				else {
+					io.to(data.conversation_id).emit("count-clients", { clients:clients.length });
+				}
+			});
+		}
+	});
 	socket.on("fetch-recipient", function(data) {
 		if(!empty(data)) {
 			var conversation_id = data.conversation_id;
