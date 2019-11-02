@@ -123,7 +123,7 @@ io.sockets.on("connection", function(socket) {
 	});
 	socket.on("new-message", function(data) {
 		if(!empty(data)) {
-			var conversation_file = conversations_folder + generate_conversation_file_name(conversation_id) + ".txt";
+			var conversation_file = conversations_folder + generate_conversation_file_name(data.conversation_id) + ".txt";
 			if(fs.existsSync(conversation_file)) {
 				fs.readFile(conversation_file, { encoding:"utf-8" }, function(error, json) {
 					if(error) {
