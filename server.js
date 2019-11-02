@@ -87,36 +87,20 @@ io.sockets.on("connection", function(socket) {
 									}
 									else {
 										if(empty(data.anonymous_id)) {
-											crypto.generateKeyPair("rsa", {
-												modulusLength:4096,
-												publicKeyEncoding: {
-													type:"spki",
-													format:"pem"
-												},
-												privateKeyEncoding: {
-													type:"pkcs8",
-													format:"pem"
-												}
-											}, function(error, public_key, private_key) {
-												if(error) {
-													console.log(error);
-												}
-												else {
-													info.clients[anonymous_id]["public_key"] = public_key;
-													if(!empty(info)) {
-														fs.writeFile(conversation_file, JSON.stringify(info), function(error) {
-															if(error) {
-																console.log(error);
-															}
-															else {
-																socket.join(data.conversation_id);
-																io.to(info.clients[anonymous_id]["socket_id"]).emit("save-credentials", { save:true, anonymous_id:anonymous_id, public_key:public_key, private_key:private_key });
-																io.to(data.conversation_id).emit("new-user", { public_key:public_key });
-															}
-														});
+											var public_key = data.public_key;
+											info.clients[anonymous_id]["public_key"] = public_key;
+											if(!empty(info)) {
+												fs.writeFile(conversation_file, JSON.stringify(info), function(error) {
+													if(error) {
+														console.log(error);
 													}
-												}
-											});
+													else {
+														socket.join(data.conversation_id);
+														io.to(info.clients[anonymous_id]["socket_id"]).emit("save-credentials", { save:true, anonymous_id:anonymous_id });
+														io.to(data.conversation_id).emit("new-user", { public_key:public_key });
+													}
+												});
+											}
 										}
 										else {
 											if(!empty(data.public_key)) {

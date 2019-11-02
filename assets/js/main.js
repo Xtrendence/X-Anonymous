@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	// Connect to Socket.IO.
 	var socket = io.connect(window.location.hostname, { reconnection:true, reconnectionDelay:1000, reconnectionDelayMax:5000, reconnectionAttempts:99999 });
 	initialize();
-	console.log(get_history());
 	// Socket.io functionality.
 	socket.on("disconnect", function() {
 		socket.connect();
@@ -13,8 +12,6 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		document.getElementsByClassName("chat-wrapper")[0].style.display = "block";
 		if(data.save) {
 			window.localStorage.setItem(get_conversation_id() + "anonymous-id", data.anonymous_id);
-			window.localStorage.setItem(get_conversation_id() + "public-key", data.public_key);
-			window.localStorage.setItem(get_conversation_id() + "private-key", data.private_key);
 		}
 		if(!empty(get_history())) {
 			var history = JSON.parse(get_history());
@@ -68,9 +65,15 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	document.getElementsByClassName("add-button")[0].addEventListener("click", function() {
 		document.getElementsByClassName("add-button-border")[0].classList.add("animated");
 		var xhr = new XMLHttpRequest();
-		xhr.onreadystatechange = function() {
+		xhr.onreadystatechange = async function() {
 			if(xhr.readyState == XMLHttpRequest.DONE) {
-				window.location.href = "./chat?id=" + xhr.responseText;
+				var chat_id = xhr.responseText;
+				var keys = await generate_keys(4096, chat_id);
+				setInterval(function() {
+					if(!empty(window.localStorage.getItem(chat_id + "public-key")) && !empty(chat_id + "private-key")) {
+						window.location.href = "./chat?id=" + chat_id;
+					}
+				}, 500);
 			}
 		}
 		xhr.open("POST", "/create", true);
@@ -115,6 +118,18 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	setInterval(function() {
 		socket.connect();
 	}, 30000);
+	// Join conversation.
+	async function join_conversation() {
+		if(empty(get_public_key()) && empty(get_private_key())) {
+			var keys = await generate_keys(4096, get_conversation_id());
+		}
+		var joining = setInterval(function() {
+			if(!empty(get_public_key()) && !empty(get_private_key())) {
+				socket.emit("join-conversation", { conversation_id:get_conversation_id(), anonymous_id:get_anonymous_id(), public_key:get_public_key() });
+				clearInterval(joining);
+			}
+		}, 500);	
+	}
 	// Send message.
 	function send_message(text) {
 		var sender_encrypted = encrypt_text(text, get_public_key());
@@ -124,6 +139,16 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	// Get conversation history.
 	function get_history() {
 		return window.localStorage.getItem(get_conversation_id() + "history");
+	}
+	// Generate RSA keys.
+	async function generate_keys(size, chat_id) {
+		var crypt = new JSEncrypt({ default_key_size:size });
+		var public_key = crypt.getPublicKey();
+		var private_key = crypt.getPrivateKey();
+		window.localStorage.setItem(chat_id + "public-key", public_key);
+		window.localStorage.setItem(chat_id + "private-key", private_key);
+		var keys = { public_key:public_key, private_key:private_key };
+		return keys;
 	}
 	// Get conversation ID.
 	function get_conversation_id() {
@@ -181,7 +206,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	}
 	// Check if a string or variable is empty.
 	function empty(text) {
-		if(text != null && text != "" && typeof text != "undefined" && JSON.stringify(text) != "{}") {
+		if(text != null && text != "null" && text != "" && typeof text != "undefined" && text != undefined && JSON.stringify(text) != "{}") {
 			return false;
 		}
 		return true;
@@ -255,7 +280,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			document.getElementsByClassName("add-button-border")[0].classList.add("animated");
 			document.getElementsByClassName("add-button")[0].classList.add("disabled");
 			document.getElementsByClassName("add-button")[0].innerHTML = document.getElementsByClassName("add-button")[0].innerHTML.replace("Create Conversation", "Loading...");
-			socket.emit("join-conversation", { conversation_id:get_conversation_id(), anonymous_id:get_anonymous_id(), public_key:get_public_key() });
+			join_conversation();
 		}
 	}
 	function detect_mobile() {
