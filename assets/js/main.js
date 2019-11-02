@@ -1,0 +1,277 @@
+document.addEventListener("DOMContentLoaded", function(e) {
+	// Connect to Socket.IO.
+	var socket = io.connect(window.location.hostname, { reconnection:true, reconnectionDelay:1000, reconnectionDelayMax:5000, reconnectionAttempts:99999 });
+	initialize();
+	console.log(get_history());
+	// Socket.io functionality.
+	socket.on("disconnect", function() {
+		socket.connect();
+	});
+	socket.on("save-credentials", function(data) {
+		document.getElementsByClassName("add-button-border")[0].style.display = "none";
+		document.getElementsByClassName("add-button")[0].style.display = "none";
+		document.getElementsByClassName("chat-wrapper")[0].style.display = "block";
+		if(data.save) {
+			window.localStorage.setItem(get_conversation_id() + "anonymous-id", data.anonymous_id);
+			window.localStorage.setItem(get_conversation_id() + "public-key", data.public_key);
+			window.localStorage.setItem(get_conversation_id() + "private-key", data.private_key);
+		}
+		if(!empty(get_history())) {
+			var history = JSON.parse(get_history());
+			var messages = Object.keys(history);
+			for(i = 0; i < messages.length; i++) {
+				var bubble = document.createElement("div");
+				bubble.classList.add("chat-bubble-wrapper");
+				bubble.classList.add(history[messages[i]]["from"]);
+				bubble.innerHTML = '<div class="chat-bubble"><span>' + history[messages[i]]["text"] + '</span></div>';
+				document.getElementsByClassName("messages-list")[0].appendChild(bubble);
+			}
+			document.getElementsByClassName("messages-list")[0].scrollTop = document.getElementsByClassName("messages-list")[0].scrollHeight;
+		}
+	});
+	socket.on("new-user", function(data) {
+		socket.emit("fetch-recipient", { conversation_id:get_conversation_id(), anonymous_id:get_anonymous_id() });
+	});
+	socket.on("new-message", function(data) {
+		if(!empty(data)) {
+			var hash = md5(get_public_key());
+			var encrypted = data[hash];
+			var decrypted = decrypt_text(encrypted, get_private_key());
+			if(data.from == hash) {
+				var from = "me";
+			}
+			else {
+				var from = "other";
+			}
+			var bubble = document.createElement("div");
+			bubble.classList.add("chat-bubble-wrapper");
+			bubble.classList.add(from);
+			bubble.innerHTML = '<div class="chat-bubble"><span>' + decrypted + '</span></div>';
+			document.getElementsByClassName("messages-list")[0].appendChild(bubble);
+			document.getElementsByClassName("input-field")[0].value = "";
+			if(!empty(get_history())) {
+				var history = JSON.parse(get_history());
+			}
+			else {
+				var history = new Object();
+			}
+			var id = generate_id();
+			Object.assign(history, { [id]:{ from:from, text:decrypted }});
+			window.localStorage.setItem(get_conversation_id() + "history", JSON.stringify(history));
+			document.getElementsByClassName("messages-list")[0].scrollTop = document.getElementsByClassName("messages-list")[0].scrollHeight;
+		}
+	});
+	socket.on("save-recipient", function(data) {
+		window.localStorage.setItem(get_conversation_id() + "recipient-public-key", data.public_key);
+	});
+	// Create conversation.
+	document.getElementsByClassName("add-button")[0].addEventListener("click", function() {
+		document.getElementsByClassName("add-button-border")[0].classList.add("animated");
+		var xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function() {
+			if(xhr.readyState == XMLHttpRequest.DONE) {
+				window.location.href = "./chat?id=" + xhr.responseText;
+			}
+		}
+		xhr.open("POST", "/create", true);
+		xhr.send();
+	});
+	// Send message.
+	document.getElementsByClassName("input-button")[0].addEventListener("click", function() {
+		var value = document.getElementsByClassName("input-field")[0].value;
+		if(!empty(value) && !empty(value.trim())) {
+			var text = value.trim();
+			var length = text.length;
+			if(length < 500) {
+				send_message(text);
+			}
+			else {
+					
+			}
+		}
+	});
+	document.getElementsByClassName("input-field")[0].addEventListener("keydown", function(e) {
+		if(e.which == 13) {
+			document.getElementsByClassName("input-button")[0].click();
+		}
+	});
+	document.addEventListener("keydown", function(e) {
+		document.getElementsByClassName("input-field")[0].focus();
+	});
+	// Window visibility functionality.
+	var window_hidden;
+	var window_visibility_change; 
+	if(typeof document.hidden !== "undefined") { 
+		hidden = "hidden";
+		window_visibility_change = "visibilitychange";
+	} 
+	else if(typeof document.webkitHidden !== "undefined") {
+		hidden = "webkitHidden";
+		window_visibility_change = "webkitvisibilitychange";
+	}
+	document.addEventListener(window_visibility_change, function() {
+		socket.connect();
+	}, false);
+	setInterval(function() {
+		socket.connect();
+	}, 30000);
+	// Send message.
+	function send_message(text) {
+		var sender_encrypted = encrypt_text(text, get_public_key());
+		var recipient_encrypted = encrypt_text(text, get_recipient_public_key());
+		socket.emit("new-message", { conversation_id:get_conversation_id(), [md5(get_public_key())]:sender_encrypted, [md5(get_recipient_public_key())]:recipient_encrypted, from:md5(get_public_key()) });
+	}
+	// Get conversation history.
+	function get_history() {
+		return window.localStorage.getItem(get_conversation_id() + "history");
+	}
+	// Get conversation ID.
+	function get_conversation_id() {
+		return get_url_query("id");
+	}
+	// Get anonymous ID.
+	function get_anonymous_id() {
+		return window.localStorage.getItem(get_conversation_id() + "anonymous-id");
+	}
+	// Get public key.
+	function get_public_key() {
+		return window.localStorage.getItem(get_conversation_id() + "public-key");
+	}
+	// Get private key.
+	function get_private_key() {
+		return window.localStorage.getItem(get_conversation_id() + "private-key");
+	}
+	// Get recipient public key.
+	function get_recipient_public_key() {
+		return window.localStorage.getItem(get_conversation_id() + "recipient-public-key");
+	}
+	// Encrypt text.
+	function encrypt_text(plaintext, key) {
+		var jsencrypt = new JSEncrypt();
+		jsencrypt.setKey(key);
+		return jsencrypt.encrypt(plaintext);
+	}
+	// Decrypt text.
+	function decrypt_text(encrypted, key) {
+		var jsencrypt = new JSEncrypt();
+		jsencrypt.setKey(key);
+		return jsencrypt.decrypt(encrypted);
+	}
+	// Encrypt text using AES-256.
+	function aes_encrypt(plaintext, password) {
+		return CryptoJS.AES.encrypt(plaintext, password);
+	}
+	// Decrypt text using AES-256.
+	function aes_decrypt(encrypted, password) {
+		var bytes  = CryptoJS.AES.decrypt(encrypted.toString(), password);
+		return bytes.toString(CryptoJS.enc.Utf8);
+	}
+	// Get URL query by key.
+	function get_url_query(key) {  
+		return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));  
+	}
+	// Generate an ID.
+	function generate_id() {
+		return epoch() + "-" + random_int(10000000, 99999999);
+	}
+	// Convert date into UNIX timestamp.
+	function to_epoch(date){
+		var date = Date.parse(date);
+		return date / 1000;
+	}
+	// Check if a string or variable is empty.
+	function empty(text) {
+		if(text != null && text != "" && typeof text != "undefined" && JSON.stringify(text) != "{}") {
+			return false;
+		}
+		return true;
+	}
+	// Return full date with hours and minutes.
+	function full_date(timestamp) {
+		var date = new Date(timestamp * 1000);
+		var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+		var year = date.getFullYear();
+		var month = months[date.getMonth()];
+		var day = date.getDate();
+		var hour = date.getHours();
+		var minute = "0" + date.getMinutes();
+		var ampm = hour >= 12 ? "PM" : "AM";
+		var hour = hour % 12;
+		var hour = hour ? hour : 12; // Hour "0" would be "12".
+		return day + nth(day) + " of " + month + ", " + year + " at " + hour + ":" + minute.substr(-2) + " " + ampm;
+	}
+	// Return date.
+	function date(timestamp) {
+		var date = new Date(timestamp * 1000);
+		var year = date.getFullYear();
+		var month = date.getMonth() + 1;
+		var day = date.getDate();
+		return day + "/" + month + "/" + year;
+	}
+	// Return time.
+	function hour(timestamp) {
+		var date = new Date(timestamp * 1000);
+		var hour = date.getHours();
+		var minute = "0" + date.getMinutes();
+		var ampm = hour >= 12 ? "PM" : "AM";
+		var hour = hour % 12;
+		var hour = hour ? hour : 12; // Hour "0" would be "12".
+		return hour + ":" + minute.substr(-2) + " " + ampm;
+	}
+	// Return current UNIX timestamp.
+	function epoch() {
+		var date = new Date();
+		var time = Math.round(date.getTime() / 1000);
+		return time;
+	}
+	// Return st, nd, rd or th.
+	function nth(d) {
+		if(d > 3 && d < 21) {
+			return 'th';
+		}
+		switch(d % 10) {
+			case 1:  return "st";
+			case 2:  return "nd";
+			case 3:  return "rd";
+			default: return "th";
+		}
+	}
+	// Generate random integer.
+	function random_int(min, max) {
+		return Math.floor(Math.random() * (max - min) + min);
+	}
+	function initialize() {
+		if(detect_mobile()) {
+			document.getElementsByTagName("body")[0].setAttribute("id", "mobile");
+		}
+		else {
+			document.getElementsByTagName("body")[0].setAttribute("id", "desktop");
+		}
+		if(empty(get_url_query("id"))) {
+			document.getElementsByClassName("add-button-border")[0].style.display = "block";
+			document.getElementsByClassName("add-button")[0].style.display = "block";
+		}
+		else {
+			document.getElementsByClassName("add-button-border")[0].classList.add("animated");
+			document.getElementsByClassName("add-button")[0].classList.add("disabled");
+			document.getElementsByClassName("add-button")[0].innerHTML = document.getElementsByClassName("add-button")[0].innerHTML.replace("Create Conversation", "Loading...");
+			socket.emit("join-conversation", { conversation_id:get_conversation_id(), anonymous_id:get_anonymous_id(), public_key:get_public_key() });
+		}
+	}
+	function detect_mobile() {
+		var check = false;
+		(function(a){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4))) check = true;})(navigator.userAgent||navigator.vendor||window.opera);
+		return check;
+	}
+	function local_storage_available() {
+		try {
+			window.localStorage.setItem("test", "test");
+			window.localStorage.removeItem("test");
+			return true;
+		} 
+		catch(e) {
+			return false;
+		}
+	}
+});
+	

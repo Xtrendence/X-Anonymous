@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="./assets/js/socket-io.js"></script>
+		<script src="./assets/js/jsencrypt.js"></script>
+		<script src="./assets/js/crypto-js.js"></script>
+		<script src="./assets/js/md5.js"></script>
+		<script src="./assets/js/main.js" class="js-file"></script>
+		<meta http-equiv=”Cache-Control” content=”no-cache”/>
+		<meta http-equiv=”Cache-Control” content=”no-store”/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<link rel="apple-touch-icon" sizes="57x57" href="./assets/img/favicon/apple-icon-57x57.png">
+		<link rel="apple-touch-icon" sizes="60x60" href="./assets/img/favicon/apple-icon-60x60.png">
+		<link rel="apple-touch-icon" sizes="72x72" href="./assets/img/favicon/apple-icon-72x72.png">
+		<link rel="apple-touch-icon" sizes="76x76" href="./assets/img/favicon/apple-icon-76x76.png">
+		<link rel="apple-touch-icon" sizes="114x114" href="./assets/img/favicon/apple-icon-114x114.png">
+		<link rel="apple-touch-icon" sizes="120x120" href="./assets/img/favicon/apple-icon-120x120.png">
+		<link rel="apple-touch-icon" sizes="144x144" href="./assets/img/favicon/apple-icon-144x144.png">
+		<link rel="apple-touch-icon" sizes="152x152" href="./assets/img/favicon/apple-icon-152x152.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="./assets/img/favicon/apple-icon-180x180.png">
+		<link rel="icon" type="image/png" sizes="192x192"  href="./assets/img/favicon/android-icon-192x192.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="./assets/img/favicon/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="96x96" href="./assets/img/favicon/favicon-96x96.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="./assets/img/favicon/favicon-16x16.png">
+		<meta name="msapplication-TileColor" content="#141414">
+		<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+		<meta name="theme-color" content="#141414">
+		<link rel="stylesheet" href="./assets/css/light.css" class="theme-css" data-color="dark">
+		<link rel="stylesheet" href="./assets/css/resize.css">
+		<title>X:/Anonymous</title>
+	</head>
+	<body>
+		<div class="add-button-border"></div>
+		<button class="add-button">
+			<svg class="add-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"/>
+				<defs>
+					<linearGradient id="gradient_1">
+						<stop offset="5%" stop-color="#33b7f6"/>
+						<stop offset="20%" stop-color="#479df8"/>
+						<stop offset="25%" stop-color="#6186f6"/>
+						<stop offset="35%" stop-color="#8464f0"/>
+						<stop offset="45%" stop-color="#ae57cb"/>
+						<stop offset="60%" stop-color="#dc529b"/>
+						<stop offset="65%" stop-color="#e35691"/>
+						<stop offset="80%" stop-color="#f35c71"/>
+						<stop offset="100%" stop-color="#fc5b57"/>
+					</linearGradient>
+				</defs>
+			</svg>
+			Create Conversation
+		</button>
+		<div class="chat-wrapper">
+			<div class="icon-wrapper logout">
+				<svg class="logout-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M497 273L329 441c-15 15-41 4.5-41-17v-96H152c-13.3 0-24-10.7-24-24v-96c0-13.3 10.7-24 24-24h136V88c0-21.4 25.9-32 41-17l168 168c9.3 9.4 9.3 24.6 0 34zM192 436v-40c0-6.6-5.4-12-12-12H96c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32h84c6.6 0 12-5.4 12-12V76c0-6.6-5.4-12-12-12H96c-53 0-96 43-96 96v192c0 53 43 96 96 96h84c6.6 0 12-5.4 12-12z"/>
+					<defs>
+						<linearGradient id="gradient_2">
+							<stop offset="5%" stop-color="#33b7f6"/>
+							<stop offset="20%" stop-color="#479df8"/>
+							<stop offset="25%" stop-color="#6186f6"/>
+							<stop offset="35%" stop-color="#8464f0"/>
+							<stop offset="45%" stop-color="#ae57cb"/>
+							<stop offset="60%" stop-color="#dc529b"/>
+							<stop offset="65%" stop-color="#e35691"/>
+							<stop offset="80%" stop-color="#f35c71"/>
+							<stop offset="100%" stop-color="#fc5b57"/>
+						</linearGradient>
+					</defs>
+				</svg>
+			</div>
+			<div class="icon-wrapper key">
+				<svg class="key-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M512 176.001C512 273.203 433.202 352 336 352c-11.22 0-22.19-1.062-32.827-3.069l-24.012 27.014A23.999 23.999 0 0 1 261.223 384H224v40c0 13.255-10.745 24-24 24h-40v40c0 13.255-10.745 24-24 24H24c-13.255 0-24-10.745-24-24v-78.059c0-6.365 2.529-12.47 7.029-16.971l161.802-161.802C163.108 213.814 160 195.271 160 176 160 78.798 238.797.001 335.999 0 433.488-.001 512 78.511 512 176.001zM336 128c0 26.51 21.49 48 48 48s48-21.49 48-48-21.49-48-48-48-48 21.49-48 48z"/>
+					<defs>
+						<linearGradient id="gradient_3">
+							<stop offset="5%" stop-color="#33b7f6"/>
+							<stop offset="20%" stop-color="#479df8"/>
+							<stop offset="25%" stop-color="#6186f6"/>
+							<stop offset="35%" stop-color="#8464f0"/>
+							<stop offset="45%" stop-color="#ae57cb"/>
+							<stop offset="60%" stop-color="#dc529b"/>
+							<stop offset="65%" stop-color="#e35691"/>
+							<stop offset="80%" stop-color="#f35c71"/>
+							<stop offset="100%" stop-color="#fc5b57"/>
+						</linearGradient>
+					</defs>
+				</svg>
+			</div>
+			<div class="messages-list"></div>
+			<input class="input-field" type="text" placeholder="Say something anonymously...">
+			<button class="input-button">
+				<svg class="send-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M476 3.2L12.5 270.6c-18.1 10.4-15.8 35.6 2.2 43.2L121 358.4l287.3-253.2c5.5-4.9 13.3 2.6 8.6 8.3L176 407v80.5c0 23.6 28.5 32.9 42.5 15.8L282 426l124.6 52.2c14.2 6 30.4-2.9 33-18.2l72-432C515 7.8 493.3-6.8 476 3.2z"/>
+					<defs>
+						<linearGradient id="gradient_4">
+							<stop offset="20%" stop-color="#33b7f6"/>
+							<stop offset="40%" stop-color="#479df8"/>
+							<stop offset="50%" stop-color="#6186f6"/>
+							<stop offset="55%" stop-color="#8464f0"/>
+							<stop offset="65%" stop-color="#ae57cb"/>
+							<stop offset="75%" stop-color="#dc529b"/>
+							<stop offset="80%" stop-color="#e35691"/>
+							<stop offset="85%" stop-color="#f35c71"/>
+							<stop offset="100%" stop-color="#fc5b57"/>
+						</linearGradient>
+					</defs>
+				</svg>
+			</button>
+		</div>
+	</body>
+</html>
