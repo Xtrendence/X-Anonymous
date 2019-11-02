@@ -6,9 +6,7 @@
 2. Create a new project, and select "Clone from Git Repo."
 3. Copy and paste the following URL into the input field: https://github.com/Xtrendence/X-Anonymous.git
 4. Press "OK," and let it finish loading.
-5. Click on "package.json" on the left side, then "Add Package," and click on the two packages to download them.
-6. Click on "server.js" on the left, and change the line at the very top to "port = process.env.PORT;" instead of "port = 80;"
-7. Click on "Show" on the top left, and select "In a New Window."
+5. Click on "Show" on the top left, and select "In a New Window."
 
 ### What does this do?
 
