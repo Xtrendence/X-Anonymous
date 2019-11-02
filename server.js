@@ -43,13 +43,14 @@ app.post("/create", function(req, res) {
 	if(!empty(req.body.key_size)) {
 		var key_size = req.body.key_size;
 		if(fs.existsSync(conversations_folder)) {
-			var conversation_id = generate_conversation_id(key_size);
+			var code = generate_code(4);
+			var conversation_id = generate_conversation_id(key_size, code);
 			var conversation_file = conversations_folder + generate_conversation_file_name(conversation_id) + ".txt";
 			while(fs.existsSync(conversation_file)) {
-				conversation_id = generate_conversation_id(key_size);
+				conversation_id = generate_conversation_id(key_size, code);
 				conversation_file = conversations_folder + generate_conversation_file_name(conversation_id) + ".txt";
 			}
-			var info = { time_created:epoch(), time_modified:epoch(), conversation_id:conversation_id, clients:{ }};
+			var info = { time_created:epoch(), time_modified:epoch(), code:code, conversation_id:conversation_id, clients:{ }};
 			fs.writeFile(conversation_file, JSON.stringify(info), { flag:"w" }, function(error) {
 				if(error) {
 					console.log(error);
@@ -192,6 +193,15 @@ function random_int(min, max) {
 function generate_id() {
 	return epoch() + "-" + random_int(10000000, 99999999);
 }
+// Generate code.
+function generate_code(length) {
+	var letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
+	var code = "";
+	for(i = 0; i < length; i++) {
+		code += letters[random_int(0, 26)];
+	}
+	return code.toUpperCase();
+}
 // Generate a token.
 function generate_token() {
 	var salt1 = bcrypt.genSaltSync();
@@ -199,8 +209,8 @@ function generate_token() {
 	return bcrypt.hashSync(salt1 + salt2, 10);
 }
 // Generate a conversation ID.
-function generate_conversation_id(key_size) {
-	return key_size + epoch() + generate_token() + generate_token();
+function generate_conversation_id(key_size, code) {
+	return key_size + "-" + code + "-" + epoch() + generate_token() + generate_token();
 }
 // Generate an anonymous ID.
 function generate_anonymous_id(conversation_id) {

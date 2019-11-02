@@ -328,6 +328,10 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	function get_key_size() {
 		return get_conversation_id().substring(0, 4);
 	}
+	// Get code.
+	function get_code() {
+		return get_conversation_id().substring(5, 9);
+	}
 	// Get anonymous ID.
 	function get_anonymous_id() {
 		return window.localStorage.getItem(get_conversation_id() + "anonymous-id");
@@ -482,6 +486,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			document.getElementsByClassName("add-button")[0].style.padding = "0 20px 0 30px";
 			document.getElementsByClassName("input-field-overlay")[0].style.display = "block";
 			join_conversation();
+			document.getElementsByTagName("title")[0].textContent = get_code() + " - " + "X:/Anonymous";
 		}
 	}
 	function detect_mobile() {
