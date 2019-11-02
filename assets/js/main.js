@@ -60,8 +60,25 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			document.getElementsByClassName("messages-list")[0].scrollTop = document.getElementsByClassName("messages-list")[0].scrollHeight;
 		}
 	});
+	socket.on("count-clients", function(data) {
+		if(data.clients == 2) {
+			document.getElementsByClassName("input-field-overlay")[0].style.display = "none";
+			document.getElementsByClassName("input-field")[0].classList.remove("disabled");
+			document.getElementsByClassName("input-button")[0].classList.remove("disabled");
+			if(empty(get_recipient_public_key())) {
+				socket.emit("fetch-recipient", { conversation_id:get_conversation_id(), anonymous_id:get_anonymous_id() });
+			}
+		}
+		else {
+			document.getElementsByClassName("input-field-overlay")[0].style.display = "block";
+			document.getElementsByClassName("input-field")[0].classList.add("disabled");
+			document.getElementsByClassName("input-button")[0].classList.add("disabled");
+		}
+	});
 	socket.on("save-recipient", function(data) {
 		window.localStorage.setItem(get_conversation_id() + "recipient-public-key", data.public_key);
+		document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].value = get_recipient_public_key();
+		document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].style.height = document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].scrollHeight + "px";
 	});
 	// Settings functionality.
 	document.getElementsByClassName("icon-wrapper settings")[0].addEventListener("click", function() {
@@ -75,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		}
 		else {
 			settings_wrapper.style.visibility = "visible";
-			settings_wrapper.style.right = "103px";
+			settings_wrapper.style.right = "20px";
 		}
 	});
 	for(i = 0; i < document.getElementsByClassName("settings-choice").length; i++) {
@@ -95,6 +112,54 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			this.classList.add("active");
 		});
 	}
+	for(i = 0; i < document.getElementsByClassName("settings-action").length; i++) {
+		document.getElementsByClassName("settings-action")[i].addEventListener("click", function() {
+			if(this.classList.contains("clear-storage")) {
+				clear_storage();
+				notify("Done", "Local storage has been cleared.", "rgb(250,250,250)", 4000);
+			}
+		});
+	}
+	// Keys pane functionality.
+	document.getElementsByClassName("icon-wrapper keys")[0].addEventListener("click", function() {
+		var keys_wrapper = document.getElementsByClassName("keys-wrapper")[0];
+		if(keys_wrapper.style.visibility == "visible") {
+			keys_wrapper.style.right = "-320px";
+			setTimeout(function() {
+				keys_wrapper.style.visibility = "hidden";
+				keys_wrapper.style.right = "-320px";
+			}, 250);
+		}
+		else {
+			keys_wrapper.style.visibility = "visible";
+			keys_wrapper.style.right = "20px";
+			keys_wrapper.getElementsByClassName("conversation-id")[0].value = get_conversation_id();
+			keys_wrapper.getElementsByClassName("anonymous-id")[0].value = get_anonymous_id();
+			keys_wrapper.getElementsByClassName("public-key")[0].value = get_public_key();
+			keys_wrapper.getElementsByClassName("private-key")[0].value = get_private_key();
+			if(get_recipient_public_key() !== "[object Object]") {
+				keys_wrapper.getElementsByClassName("recipient-public-key")[0].value = get_recipient_public_key();
+			}
+			else {
+				keys_wrapper.getElementsByClassName("recipient-public-key")[0].value = "Other user not connected.";
+			}
+			for(i = 0; i < keys_wrapper.getElementsByTagName("textarea").length; i++) {
+				keys_wrapper.getElementsByTagName("textarea")[i].style.height = keys_wrapper.getElementsByTagName("textarea")[i].scrollHeight + "px";
+			}
+		}
+	});
+	// Clicking to dismiss keys pane.
+	document.getElementsByClassName("messages-list")[0].addEventListener("click", function(e) {
+		var keys_wrapper = document.getElementsByClassName("keys-wrapper")[0];
+		if(keys_wrapper.style.visibility == "visible") {
+			keys_wrapper.style.right = "-320px";
+			setTimeout(function() {
+				keys_wrapper.style.visibility = "hidden";
+				keys_wrapper.style.right = "-320px";
+			}, 250);
+		}
+	});
+	// Clicking to dismiss settings.
 	document.getElementsByClassName("add-page")[0].addEventListener("click", function() {
 		var settings_wrapper = document.getElementsByClassName("settings-wrapper")[0];
 		if(settings_wrapper.style.visibility == "visible") {
@@ -107,7 +172,10 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	});
 	// Create conversation.
 	document.getElementsByClassName("add-button")[0].addEventListener("click", function() {
+		notify("Creating Conversation", "This might take more than 20 seconds.");
 		document.getElementsByClassName("add-button-border")[0].classList.add("animated");
+		document.getElementsByClassName("add-button")[0].innerHTML = document.getElementsByClassName("add-button")[0].innerHTML.replace("Create Conversation", "Loading...");
+		document.getElementsByClassName("add-button")[0].style.padding = "0 20px 0 30px";
 		var xhr = new XMLHttpRequest();
 		xhr.onreadystatechange = async function() {
 			if(xhr.readyState == XMLHttpRequest.DONE) {
@@ -131,15 +199,26 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	});
 	// Send message.
 	document.getElementsByClassName("input-button")[0].addEventListener("click", function() {
-		var value = document.getElementsByClassName("input-field")[0].value;
-		if(!empty(value) && !empty(value.trim())) {
-			var text = value.trim();
-			var length = text.length;
-			if(length < 500) {
-				send_message(text);
+		if(!document.getElementsByClassName("input-field")[0].classList.contains("disabled")) {
+			var value = document.getElementsByClassName("input-field")[0].value;
+			if(!empty(value) && !empty(value.trim())) {
+				var key_size = window.localStorage.getItem(get_conversation_id() + "key-size");
+				var text = value.trim();
+				var length = text.length;
+				var bits = length * 16;
+				var safety = 160;
+				// RSA can't encrypt content that's bigger than the key size.
+				if(length < (key_size - safety)) {
+					send_message(text);
+				}
 			}
-			else {
-					
+			var keys_wrapper = document.getElementsByClassName("keys-wrapper")[0];
+			if(keys_wrapper.style.visibility == "visible") {
+				keys_wrapper.style.right = "-320px";
+				setTimeout(function() {
+					keys_wrapper.style.visibility = "hidden";
+					keys_wrapper.style.right = "-320px";
+				}, 250);
 			}
 		}
 	});
@@ -149,7 +228,17 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		}
 	});
 	document.addEventListener("keydown", function(e) {
-		document.getElementsByClassName("input-field")[0].focus();
+		if(!document.getElementsByClassName("input-field")[0].classList.contains("disabled")) {
+			document.getElementsByClassName("input-field")[0].focus();
+			var keys_wrapper = document.getElementsByClassName("keys-wrapper")[0];
+			if(keys_wrapper.style.visibility == "visible") {
+				keys_wrapper.style.right = "-320px";
+				setTimeout(function() {
+					keys_wrapper.style.visibility = "hidden";
+					keys_wrapper.style.right = "-320px";
+				}, 250);
+			}
+		}
 	});
 	// Window visibility functionality.
 	var window_hidden;
@@ -177,14 +266,22 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			if(!empty(get_public_key()) && !empty(get_private_key())) {
 				socket.emit("join-conversation", { conversation_id:get_conversation_id(), anonymous_id:get_anonymous_id(), public_key:get_public_key() });
 				clearInterval(joining);
+				// Check if other user is connected.
+				setInterval(function() {
+					socket.emit("count-clients", { conversation_id:get_conversation_id() });
+				}, 2000);
 			}
-		}, 500);	
+		}, 500);
 	}
 	// Send message.
 	function send_message(text) {
 		var sender_encrypted = encrypt_text(text, get_public_key());
 		var recipient_encrypted = encrypt_text(text, get_recipient_public_key());
 		socket.emit("new-message", { conversation_id:get_conversation_id(), [md5(get_public_key())]:sender_encrypted, [md5(get_recipient_public_key())]:recipient_encrypted, from:md5(get_public_key()) });
+	}
+	// Clear Local Storage.
+	function clear_storage() {
+		window.localStorage.clear();
 	}
 	// Get conversation history.
 	function get_history() {
@@ -195,6 +292,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		var crypt = new JSEncrypt({ default_key_size:size });
 		var public_key = crypt.getPublicKey();
 		var private_key = crypt.getPrivateKey();
+		window.localStorage.setItem(chat_id + "key-size", size);
 		window.localStorage.setItem(chat_id + "public-key", public_key);
 		window.localStorage.setItem(chat_id + "private-key", private_key);
 		var keys = { public_key:public_key, private_key:private_key };
@@ -339,9 +437,12 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			}
 		}
 		else {
+			document.getElementsByClassName("icon-wrapper github")[0].style.display = "none";
+			document.getElementsByClassName("icon-wrapper settings")[0].style.display = "none";
 			document.getElementsByClassName("add-button-border")[0].classList.add("animated");
 			document.getElementsByClassName("add-button")[0].classList.add("disabled");
 			document.getElementsByClassName("add-button")[0].innerHTML = document.getElementsByClassName("add-button")[0].innerHTML.replace("Create Conversation", "Loading...");
+			document.getElementsByClassName("add-button")[0].style.padding = "0 20px 0 30px";
 			join_conversation();
 		}
 	}
@@ -359,6 +460,29 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		catch(e) {
 			return false;
 		}
+	}
+	// Notification function.
+	function notify(title, description, color, duration) {
+		var area = document.createElement("div");
+		area.classList.add("notifiaction-area");
+		area.classList.add("noselect");
+		document.body.appendChild(area);
+		var notification = document.createElement("div");
+		notification.classList.add("notification-wrapper");
+		notification.innerHTML = '<div class="notification-bubble" style="background:' + color + ';"><div class="notification-title-wrapper"><span class="notification-title">' + title + '</span></div><div class="notification-description-wrapper"><span class="notification-description">' + description + '</span></div></div>';
+		area.appendChild(notification);
+		notification.style.height = notification.scrollHeight + "px";
+		notification.style.visibility = "visible";
+		notification.getElementsByClassName("notification-bubble")[0].style.left = "20px";
+		setTimeout(function() {
+			notification.getElementsByClassName("notification-bubble")[0].style.left = "-400px";
+			setTimeout(function() {
+				notification.remove();
+				if(area.innerHTML == "") {
+					area.remove();
+				}
+			}, 500);
+		}, duration);
 	}
 });
 	

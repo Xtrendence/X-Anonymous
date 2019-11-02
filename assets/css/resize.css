@@ -1,0 +1,17 @@
+@media screen and (max-width:400px) {
+	.settings-wrapper {
+		width:calc(100% - 40px - 40px);
+	}
+	.keys-wrapper {
+		width:calc(100% - 40px - 40px);
+	}
+}
+
+@media screen and (max-height:580px) {
+	.settings-wrapper {
+		height:calc(100% - 100px - 40px);
+	}
+	.keys-wrapper {
+		height:calc(100% - 100px - 40px);
+	}
+}

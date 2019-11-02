@@ -1,4 +1,7 @@
-const port = 80;
+var port = 80;
+if(!empty(process.env.PORT)) {
+	port = process.env.PORT;
+}
 
 const express = require("express");
 const session = require("express-session");
@@ -44,7 +47,7 @@ app.post("/create", function(req, res) {
 			conversation_id = generate_conversation_id();
 			conversation_file = conversations_folder + generate_conversation_file_name(conversation_id) + ".txt";
 		}
-		var info = { time_created:epoch(), conversation_id:conversation_id, clients:{ }};
+		var info = { time_created:epoch(), time_modified:epoch(), conversation_id:conversation_id, clients:{ }};
 		fs.writeFile(conversation_file, JSON.stringify(info), { flag:"w" }, function(error) {
 			if(error) {
 				console.log(error);
@@ -120,7 +123,42 @@ io.sockets.on("connection", function(socket) {
 	});
 	socket.on("new-message", function(data) {
 		if(!empty(data)) {
-			io.to(data.conversation_id).emit("new-message", data);
+			var conversation_file = conversations_folder + generate_conversation_file_name(conversation_id) + ".txt";
+			if(fs.existsSync(conversation_file)) {
+				fs.readFile(conversation_file, { encoding:"utf-8" }, function(error, json) {
+					if(error) {
+						console.log(error);
+					}
+					else {
+						if(!empty(json)) {
+							var info = JSON.parse(json);
+							info.time_modified = epoch();
+							if(!empty(info)) {
+								fs.writeFile(conversation_file, JSON.stringify(info), function(error) {
+									if(error) {
+										console.log(error);
+									}
+									else {
+										io.to(data.conversation_id).emit("new-message", data);
+									}
+								});
+							}
+						}
+					}
+				});
+			}
+		}
+	});
+	socket.on("count-clients", function(data) {
+		if(!empty(data)) {
+			io.in(data.conversation_id).clients(function(error, clients) {
+				if(error) {
+					console.log(error);
+				}
+				else {
+					io.to(data.conversation_id).emit("count-clients", { clients:clients.length });
+				}
+			});
 		}
 	});
 	socket.on("fetch-recipient", function(data) {
@@ -254,8 +292,8 @@ function nth(d) {
 }
 // Check if a string is empty.
 function empty(text) {
-	if(text != "" && text != null && typeof text != "undefined") {
-		return false;	
+	if(text != null && text != "null" && text != "" && typeof text != "undefined" && text != undefined && JSON.stringify(text) != "{}") {
+		return false;
 	}
 	return true;
 }
