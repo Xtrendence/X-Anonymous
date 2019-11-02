@@ -149,6 +149,11 @@ io.sockets.on("connection", function(socket) {
 			}
 		}
 	});
+	socket.on("announce-existence", function(data) {
+		if(!empty(data)) {
+			io.to(data.conversation_id).emit("new-user", { public_key:data.public_key });
+		}
+	});
 	socket.on("count-clients", function(data) {
 		if(!empty(data)) {
 			io.in(data.conversation_id).clients(function(error, clients) {

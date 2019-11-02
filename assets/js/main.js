@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		if(data.public_key != get_public_key()) {
 			window.localStorage.setItem(get_conversation_id() + "recipient-public-key", data.public_key);
 		}
+		socket.emit("announce-existence", { conversation_id:get_conversation_id(), public_key:get_public_key() });
 	});
 	socket.on("new-message", function(data) {
 		if(!empty(data)) {
@@ -69,7 +70,6 @@ document.addEventListener("DOMContentLoaded", function(e) {
 				document.getElementsByClassName("input-field")[0].classList.remove("disabled");
 				document.getElementsByClassName("input-button")[0].classList.remove("disabled");
 			}, 500);
-			
 		}
 		else {
 			document.getElementsByClassName("input-field-overlay")[0].style.display = "block";
