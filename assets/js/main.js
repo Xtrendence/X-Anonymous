@@ -9,6 +9,8 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	socket.on("save-credentials", function(data) {
 		document.getElementsByClassName("add-button-border")[0].style.display = "none";
 		document.getElementsByClassName("add-button")[0].style.display = "none";
+		document.getElementsByClassName("add-page")[0].style.display = "none";
+		document.getElementsByClassName("icon-wrapper settings")[0].style.display = "none";
 		document.getElementsByClassName("chat-wrapper")[0].style.display = "block";
 		if(data.save) {
 			window.localStorage.setItem(get_conversation_id() + "anonymous-id", data.anonymous_id);
@@ -61,6 +63,48 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	socket.on("save-recipient", function(data) {
 		window.localStorage.setItem(get_conversation_id() + "recipient-public-key", data.public_key);
 	});
+	// Settings functionality.
+	document.getElementsByClassName("icon-wrapper settings")[0].addEventListener("click", function() {
+		var settings_wrapper = document.getElementsByClassName("settings-wrapper")[0];
+		if(settings_wrapper.style.visibility == "visible") {
+			settings_wrapper.style.right = "-320px";
+			setTimeout(function() {
+				settings_wrapper.style.visibility = "hidden";
+				settings_wrapper.style.right = "-320px";
+			}, 250);
+		}
+		else {
+			settings_wrapper.style.visibility = "visible";
+			settings_wrapper.style.right = "103px";
+		}
+	});
+	for(i = 0; i < document.getElementsByClassName("settings-choice").length; i++) {
+		document.getElementsByClassName("settings-choice")[i].addEventListener("click", function() {
+			if(this.classList.contains("key-size")) {
+				window.localStorage.setItem("preference-key-size", this.textContent);
+				for(j = 0; j < document.getElementsByClassName("settings-choice key-size").length; j++) {
+					document.getElementsByClassName("settings-choice key-size")[j].classList.remove("active");
+				}
+			}
+			else if(this.classList.contains("theme")) {
+				window.localStorage.setItem("preference-theme", this.textContent.toLowerCase());
+				for(j = 0; j < document.getElementsByClassName("settings-choice theme").length; j++) {
+					document.getElementsByClassName("settings-choice theme")[j].classList.remove("active");
+				}
+			}
+			this.classList.add("active");
+		});
+	}
+	document.getElementsByClassName("add-page")[0].addEventListener("click", function() {
+		var settings_wrapper = document.getElementsByClassName("settings-wrapper")[0];
+		if(settings_wrapper.style.visibility == "visible") {
+			settings_wrapper.style.right = "-320px";
+			setTimeout(function() {
+				settings_wrapper.style.visibility = "hidden";
+				settings_wrapper.style.right = "-320px";
+			}, 250);
+		}
+	});
 	// Create conversation.
 	document.getElementsByClassName("add-button")[0].addEventListener("click", function() {
 		document.getElementsByClassName("add-button-border")[0].classList.add("animated");
@@ -68,7 +112,13 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		xhr.onreadystatechange = async function() {
 			if(xhr.readyState == XMLHttpRequest.DONE) {
 				var chat_id = xhr.responseText;
-				var keys = await generate_keys(4096, chat_id);
+				if(document.getElementsByClassName("settings-choice key-size active").length > 0) {
+					var size = document.getElementsByClassName("settings-choice key-size active")[0].textContent;
+				}
+				else {
+					var size = 4096;
+				}
+				var keys = await generate_keys(parseInt(size), chat_id);
 				setInterval(function() {
 					if(!empty(window.localStorage.getItem(chat_id + "public-key")) && !empty(chat_id + "private-key")) {
 						window.location.href = "./chat?id=" + chat_id;
@@ -275,6 +325,18 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		if(empty(get_url_query("id"))) {
 			document.getElementsByClassName("add-button-border")[0].style.display = "block";
 			document.getElementsByClassName("add-button")[0].style.display = "block";
+			if(!empty(window.localStorage.getItem("preference-key-size"))) {
+				for(j = 0; j < document.getElementsByClassName("settings-choice key-size").length; j++) {
+					document.getElementsByClassName("settings-choice key-size")[j].classList.remove("active");
+				}
+				document.getElementsByClassName("settings-choice key-size " + window.localStorage.getItem("preference-key-size"))[0].classList.add("active");
+			}
+			if(!empty(window.localStorage.getItem("preference-theme"))) {
+				for(j = 0; j < document.getElementsByClassName("settings-choice theme").length; j++) {
+					document.getElementsByClassName("settings-choice theme")[j].classList.remove("active");
+				}
+				document.getElementsByClassName("settings-choice theme " + window.localStorage.getItem("preference-theme"))[0].classList.add("active");
+			}
 		}
 		else {
 			document.getElementsByClassName("add-button-border")[0].classList.add("animated");

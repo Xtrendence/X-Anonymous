@@ -11,7 +11,7 @@ body {
 	color:rgb(75,75,75);
 	margin:0;
 	padding:0;
-	overflow:visible;
+	overflow:hidden;
 }
 a {
 	text-decoration:none;
@@ -35,6 +35,89 @@ button {
 	pointer-events:none;
 }
 
+.icon-wrapper.settings {
+	background:rgb(250,250,250);
+	padding:14px;
+	position:absolute;
+	right:20px;
+	top:20px;
+	border-radius:50%;
+	z-index:10;
+	cursor:pointer;
+	transition:box-shadow 0.25s;
+	box-shadow:var(--shadow-dark);
+}
+.settings-icon {
+	background:none;
+	width:32px;
+	height:32px;
+	fill:url("#gradient-settings");
+	shape-rendering:geometricPrecision;
+}
+.settings-wrapper {
+	background:rgb(250,250,250);
+	z-index:3;
+	position:absolute;
+	top:20px;
+	right:-320px;
+	width:280px;
+	height:280px;
+	padding:20px;
+	visibility:hidden;
+	border-radius:10px;
+	transition:right 0.25s;
+	box-shadow:var(--shadow-dark);
+	display:block;
+	overflow:hidden;
+	font-size:0;
+	overflow-x:hidden;
+	overflow-y:scroll;
+	scroll-behavior:smooth;
+	-webkit-overflow-scrolling:touch;
+}
+.settings-wrapper::-webkit-scrollbar {
+	display:none;
+}
+.settings-title {
+	display:block;
+	color:rgb(100,100,100);
+	font-size:16px;
+	font-weight:bold;
+}
+.settings-description {
+	display:block;
+	color:rgb(100,100,100);
+	font-size:14px;
+	margin-top:20px;
+}
+.settings-choice {
+	display:inline-block;
+	font-size:16px;
+	margin:20px 10px 20px 0;
+	background:rgb(40,40,40);
+	color:rgb(250,250,250);
+	padding:10px;
+	border-radius:20px;
+	transition:background 0.25s;
+}
+#desktop .settings-choice:hover {
+	background:rgb(60,60,60);
+}
+.settings-choice.active {
+	pointer-events:none;
+	background:#33b7f6;
+	background:linear-gradient(140deg, #33b7f6 5%, #479df8 20%, #6186f6 25%, #8464f0 35%, #ae57cb 45%, #dc529b 60%, #e35691 65%, #f35c71 80%, #fc5b57 100%);
+	background:-webkit-linear-gradient(140deg, #33b7f6 5%, #479df8 20%, #6186f6 25%, #8464f0 35%, #ae57cb 45%, #dc529b 60%, #e35691 65%, #f35c71 80%, #fc5b57 100%);
+}
+
+.add-page {
+	position:absolute;
+	width:100%;
+	height:100%;
+	top:0;
+	left:0;
+	z-index:1;
+}
 .add-button-border {
 	z-index:5;
 	background:none;
@@ -92,7 +175,7 @@ button {
 	padding:14px;
 	width:32px;
 	height:32px;
-	fill:url("#gradient_1");
+	fill:url("#gradient-add");
 	shape-rendering:geometricPrecision;
 	position:absolute;
 	left:0;
@@ -102,7 +185,7 @@ button {
 .chat-wrapper {
 	display:none;
 }
-.chat-wrapper .icon-wrapper.logout {
+.icon-wrapper.logout {
 	background:rgb(250,250,250);
 	padding:14px;
 	position:absolute;
@@ -114,14 +197,14 @@ button {
 	transition:box-shadow 0.25s;
 	box-shadow:var(--shadow-dark);
 }
-.chat-wrapper .logout-icon {
+.logout-icon {
 	background:none;
 	width:32px;
 	height:32px;
-	fill:url("#gradient_2");
+	fill:url("#gradient-logout");
 	shape-rendering:geometricPrecision;
 }
-.chat-wrapper .icon-wrapper.key {
+.icon-wrapper.key {
 	background:rgb(250,250,250);
 	padding:14px;
 	position:absolute;
@@ -133,14 +216,14 @@ button {
 	transition:box-shadow 0.25s;
 	box-shadow:var(--shadow-dark);
 }
-.chat-wrapper .key-icon {
+.key-icon {
 	background:none;
 	width:32px;
 	height:32px;
-	fill:url("#gradient_3");
+	fill:url("#gradient-key");
 	shape-rendering:geometricPrecision;
 }
-#desktop .chat-wrapper .icon-wrapper:hover {
+#desktop .icon-wrapper:hover {
 	box-shadow:var(--shadow-darker);
 }
 
@@ -235,6 +318,6 @@ button {
 	background:none;
 	width:32px;
 	height:32px;
-	fill:url("#gradient_3");
+	fill:url("#gradient-send");
 	shape-rendering:geometricPrecision;
 }
