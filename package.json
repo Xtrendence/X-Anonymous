@@ -4,7 +4,8 @@
   "description": "An anonymous end-to-end encrypted chat web application.",
   "main": "server.js",
   "scripts": {
-    "test": "npm test"
+    "test": "npm test",
+    "start": "node server.js"
   },
   "author": "Xtrendence",
   "license": "ISC",
