@@ -20,7 +20,7 @@
 
 If it doesn't work, once the project has loaded, look for the "package.json" file on the left side of the screen, and click on it. Then click on the "Add Package" button, and click on any packages that show up to download them. If it still doesn't work, then contact me through one of my social media profiles listed at the bottom of my [website](https://www.xtrendence.com).
 
-Also, keep in mind that Glitch automatically shuts down your server after 30 minutes of inactivity, and all your projects are run on a VM on the same server, so having multiple instances of X:/Anonymous will crash it. To solve this, you'll need to delete the project from Glitch when making a new one.
+Also, keep in mind that Glitch automatically shuts down your server after 30 minutes of inactivity.
 
 ### What does this do?
 
