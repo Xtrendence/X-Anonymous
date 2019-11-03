@@ -204,6 +204,9 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	});
 	// Create conversation.
 	document.getElementsByClassName("add-button")[0].addEventListener("click", function() {
+		if(!document.getElementsByClassName("input-field")[0].classList.contains("disabled")) {
+			document.getElementsByClassName("input-field")[0].focus();
+		}
 		notify("Creating Conversation", "This might take more than 20 seconds.", "theme", 4000);
 		document.getElementsByClassName("add-button-border")[0].classList.add("animated");
 		document.getElementsByClassName("add-button")[0].innerHTML = document.getElementsByClassName("add-button")[0].innerHTML.replace("Create Conversation", "Loading...");

@@ -415,6 +415,7 @@ button {
 	position:absolute;
 	top:0;
 	left:0;
+	z-index:2;
 	width:calc(100% - 40px);
 	height:calc(100% - 100px - 83px);
 	padding:100px 20px 83px 20px;
@@ -513,6 +514,7 @@ button {
 	position:absolute;
 	right:20px;
 	bottom:20px;
+	z-index:3;
 	border-radius:50%;
 	cursor:pointer;
 	transition:box-shadow 0.25s;
