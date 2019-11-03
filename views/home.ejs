@@ -127,6 +127,23 @@
 					</svg>
 				</div>
 			</a>
+			<div class="icon-wrapper drive">
+				<svg class="drive-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M576 304v96c0 26.51-21.49 48-48 48H48c-26.51 0-48-21.49-48-48v-96c0-26.51 21.49-48 48-48h480c26.51 0 48 21.49 48 48zm-48-80a79.557 79.557 0 0 1 30.777 6.165L462.25 85.374A48.003 48.003 0 0 0 422.311 64H153.689a48 48 0 0 0-39.938 21.374L17.223 230.165A79.557 79.557 0 0 1 48 224h480zm-48 96c-17.673 0-32 14.327-32 32s14.327 32 32 32 32-14.327 32-32-14.327-32-32-32zm-96 0c-17.673 0-32 14.327-32 32s14.327 32 32 32 32-14.327 32-32-14.327-32-32-32z"/>
+					<defs>
+						<linearGradient id="gradient-drive">
+							<stop offset="5%" stop-color="#33b7f6"/>
+							<stop offset="20%" stop-color="#479df8"/>
+							<stop offset="25%" stop-color="#6186f6"/>
+							<stop offset="35%" stop-color="#8464f0"/>
+							<stop offset="45%" stop-color="#ae57cb"/>
+							<stop offset="60%" stop-color="#dc529b"/>
+							<stop offset="65%" stop-color="#e35691"/>
+							<stop offset="80%" stop-color="#f35c71"/>
+							<stop offset="100%" stop-color="#fc5b57"/>
+						</linearGradient>
+					</defs>
+				</svg>
+			</div>
 			<div class="icon-wrapper share">
 				<svg class="share-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M352 320c-22.608 0-43.387 7.819-59.79 20.895l-102.486-64.054a96.551 96.551 0 0 0 0-41.683l102.486-64.054C308.613 184.181 329.392 192 352 192c53.019 0 96-42.981 96-96S405.019 0 352 0s-96 42.981-96 96c0 7.158.79 14.13 2.276 20.841L155.79 180.895C139.387 167.819 118.608 160 96 160c-53.019 0-96 42.981-96 96s42.981 96 96 96c22.608 0 43.387-7.819 59.79-20.895l102.486 64.054A96.301 96.301 0 0 0 256 416c0 53.019 42.981 96 96 96s96-42.981 96-96-42.981-96-96-96z"/>
 					<defs>
@@ -161,9 +178,6 @@
 					</defs>
 				</svg>
 			</div>
-			<div class="share-wrapper">
-
-			</div>
 			<div class="keys-wrapper">
 				<span class="keys-title">Conversation ID</span>
 				<textarea class="conversation-id" readonly></textarea>
@@ -179,6 +193,7 @@
 			<div class="messages-list"></div>
 			<span class="input-field-overlay noselect">Other user not connected.</span>
 			<input class="input-field disabled" type="text" placeholder="Say something anonymously...">
+			<span class="input-count noselect"></span>
 			<button class="input-button disabled">
 				<svg class="send-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M476 3.2L12.5 270.6c-18.1 10.4-15.8 35.6 2.2 43.2L121 358.4l287.3-253.2c5.5-4.9 13.3 2.6 8.6 8.3L176 407v80.5c0 23.6 28.5 32.9 42.5 15.8L282 426l124.6 52.2c14.2 6 30.4-2.9 33-18.2l72-432C515 7.8 493.3-6.8 476 3.2z"/>
 					<defs>
@@ -197,5 +212,8 @@
 				</svg>
 			</button>
 		</div>
+		<noscript>
+			<button class="noscript-label">JavaScript Required</button>
+		</noscript>
 	</body>
 </html>

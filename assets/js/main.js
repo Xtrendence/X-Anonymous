@@ -65,6 +65,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			bubble.innerHTML = '<div class="chat-bubble"><span>' + decrypted + '</span></div>';
 			document.getElementsByClassName("messages-list")[0].appendChild(bubble);
 			document.getElementsByClassName("input-field")[0].value = "";
+			set_remaining_characters();
 			if(!empty(get_history())) {
 				var history = JSON.parse(get_history());
 			}
@@ -122,6 +123,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			}
 			else if(this.classList.contains("theme")) {
 				window.localStorage.setItem("preference-theme", this.textContent.toLowerCase());
+				set_theme(this.textContent.toLowerCase());
 				for(j = 0; j < document.getElementsByClassName("settings-choice theme").length; j++) {
 					document.getElementsByClassName("settings-choice theme")[j].classList.remove("active");
 				}
@@ -134,7 +136,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		document.getElementsByClassName("settings-action")[i].addEventListener("click", function() {
 			if(this.classList.contains("clear-storage")) {
 				clear_storage();
-				notify("Done", "Local storage has been cleared. Refreshing...", "rgb(250,250,250)", 4000);
+				notify("Done", "Local storage has been cleared. Refreshing...", "theme", 4000);
 			}
 		});
 	}
@@ -166,10 +168,17 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			}
 		}
 	});
+	// Drive button functionality.
+	document.getElementsByClassName("icon-wrapper drive")[0].addEventListener("click", function() {
+		var space = local_storage_space();
+		var used = space.used;
+		var free = space.free;
+		notify("Local Storage", used + " KBs Used | " + free + " KBs Free", "theme", 4000);
+	});
 	// Share button functionality.
 	document.getElementsByClassName("icon-wrapper share")[0].addEventListener("click", function() {
 		copy_to_clipboard(window.location.href);
-		notify("Copied", "The URL of this chat has been copied to your clipboard. Share it to talk to someone anonymously.", "rgb(250,250,250)", 4000);
+		notify("Copied", "The URL of this chat has been copied to your clipboard. Share it to talk to someone anonymously.", "theme", 4000);
 	});
 	// Clicking to dismiss keys pane.
 	document.getElementsByClassName("messages-list")[0].addEventListener("click", function(e) {
@@ -195,7 +204,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	});
 	// Create conversation.
 	document.getElementsByClassName("add-button")[0].addEventListener("click", function() {
-		notify("Creating Conversation", "This might take more than 20 seconds.", "rgb(250,250,250)", 4000);
+		notify("Creating Conversation", "This might take more than 20 seconds.", "theme", 4000);
 		document.getElementsByClassName("add-button-border")[0].classList.add("animated");
 		document.getElementsByClassName("add-button")[0].innerHTML = document.getElementsByClassName("add-button")[0].innerHTML.replace("Create Conversation", "Loading...");
 		document.getElementsByClassName("add-button")[0].style.padding = "0 20px 0 30px";
@@ -228,14 +237,25 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		if(!document.getElementsByClassName("input-field")[0].classList.contains("disabled")) {
 			var value = document.getElementsByClassName("input-field")[0].value;
 			if(!empty(value) && !empty(value.trim())) {
-				var key_size = window.localStorage.getItem(get_conversation_id() + "key-size");
+				var max;
+				var key_size = get_key_size();
+				if(key_size == 2048) {
+					max = 230;
+				}
+				else if(key_size == 3072) {
+					max = 340;
+				}
+				else {
+					max = 450;
+				}
 				var text = value.trim();
 				var length = text.length;
-				var bits = length * 16;
-				var safety = 160;
 				// RSA can't encrypt content that's bigger than the key size.
-				if(length < (key_size - safety)) {
+				if(length <= max) {
 					send_message(text);
+				}
+				else {
+					notify("Error", "Message too long.", "theme", 4000);
 				}
 			}
 			var keys_wrapper = document.getElementsByClassName("keys-wrapper")[0];
@@ -252,6 +272,10 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		if(e.which == 13) {
 			document.getElementsByClassName("input-button")[0].click();
 		}
+		set_remaining_characters();
+	});
+	document.getElementsByClassName("input-field")[0].addEventListener("keyup", function() {
+		set_remaining_characters();
 	});
 	document.addEventListener("keydown", function(e) {
 		if(!document.getElementsByClassName("input-field")[0].classList.contains("disabled")) {
@@ -315,7 +339,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		document.getElementsByClassName("settings-wrapper")[0].getElementsByClassName("settings-storage-foreground")[0].style.width = width + "%";
 		document.getElementsByClassName("settings-wrapper")[0].getElementsByClassName("settings-storage-title")[0].textContent = used + " KBs Used | " + free + " KBs Free";
 		if(used > free - 100) {
-			notify("Local Storage", "The local storage is almost full.", "rgb(250,250,250)", 4000);
+			notify("Local Storage", "The local storage is almost full.", "theme", 4000);
 		}
 	}
 	// Clear local storage.
@@ -398,6 +422,48 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	function generate_id() {
 		return epoch() + "-" + random_int(10000000, 99999999);
 	}
+	// Set theme.
+	function set_theme(color) {
+		if(color == "light") {
+			document.getElementsByClassName("theme-css")[0].href = document.getElementsByClassName("theme-css")[0].href.replace("dark", "light");
+			document.getElementsByClassName("theme-css")[0].setAttribute("data-color", "light");
+		}
+		else if(color == "dark") {
+			document.getElementsByClassName("theme-css")[0].href = document.getElementsByClassName("theme-css")[0].href.replace("light", "dark");
+			document.getElementsByClassName("theme-css")[0].setAttribute("data-color", "dark");
+		}
+	}
+	// Set remaining characters.
+	function set_remaining_characters() {
+		var max;
+		var key_size = window.localStorage.getItem(get_conversation_id() + "key-size");
+		if(key_size == 2048) {
+			max = 230;
+		}
+		else if(key_size == 3072) {
+			max = 340;
+		}
+		else {
+			max = 450;
+		}
+		if(empty(document.getElementsByClassName("input-field")[0].value)) {
+			document.getElementsByClassName("input-count")[0].textContent = max;
+			document.getElementsByClassName("input-count")[0].style.color = "#8464f0";
+		}
+		else {
+			document.getElementsByClassName("input-count")[0].textContent = max - document.getElementsByClassName("input-field")[0].value.length;
+			if(document.getElementsByClassName("input-count")[0].textContent > 30) {
+				document.getElementsByClassName("input-count")[0].style.color = "#8464f0";
+			}
+			else if(document.getElementsByClassName("input-count")[0].textContent <= 30 && document.getElementsByClassName("input-count")[0].textContent > 0) {
+				document.getElementsByClassName("input-count")[0].style.color = "#fc5b57";
+			}
+			else if(document.getElementsByClassName("input-count")[0].textContent <= 0) {
+				document.getElementsByClassName("input-count")[0].textContent = 0;
+				document.getElementsByClassName("input-field")[0].value = document.getElementsByClassName("input-field")[0].value.substring(0, max);
+			}
+		}
+	}
 	// Convert date into UNIX timestamp.
 	function to_epoch(date){
 		var date = Date.parse(date);
@@ -442,6 +508,10 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		var hour = hour ? hour : 12; // Hour "0" would be "12".
 		return hour + ":" + minute.substr(-2) + " " + ampm;
 	}
+	// Separate number by thousands.
+	function separate_thousands(number) {
+		return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	}
 	// Return current UNIX timestamp.
 	function epoch() {
 		var date = new Date();
@@ -477,49 +547,66 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	}
 	function initialize() {
 		if(local_storage_available()) {
-			update_local_storage();
-			if(detect_mobile()) {
-				document.getElementsByTagName("body")[0].setAttribute("id", "mobile");
+			if(canvas_available()) {
+				update_local_storage();
+				if(detect_mobile()) {
+					document.getElementsByTagName("body")[0].setAttribute("id", "mobile");
+				}
+				else {
+					document.getElementsByTagName("body")[0].setAttribute("id", "desktop");
+				}
+				if(empty(get_url_query("id"))) {
+					document.getElementsByClassName("add-button-border")[0].style.display = "block";
+					document.getElementsByClassName("add-button")[0].style.display = "block";
+					if(!empty(window.localStorage.getItem("preference-key-size"))) {
+						for(j = 0; j < document.getElementsByClassName("settings-choice key-size").length; j++) {
+							document.getElementsByClassName("settings-choice key-size")[j].classList.remove("active");
+						}
+						document.getElementsByClassName("settings-choice key-size " + window.localStorage.getItem("preference-key-size"))[0].classList.add("active");
+					}
+					if(!empty(window.localStorage.getItem("preference-theme"))) {
+						for(j = 0; j < document.getElementsByClassName("settings-choice theme").length; j++) {
+							document.getElementsByClassName("settings-choice theme")[j].classList.remove("active");
+						}
+						document.getElementsByClassName("settings-choice theme " + window.localStorage.getItem("preference-theme"))[0].classList.add("active");
+					}
+				}
+				else {
+					document.getElementsByClassName("icon-wrapper github")[0].style.display = "none";
+					document.getElementsByClassName("icon-wrapper settings")[0].style.display = "none";
+					document.getElementsByClassName("add-button-border")[0].classList.add("animated");
+					document.getElementsByClassName("add-button")[0].classList.add("disabled");
+					document.getElementsByClassName("add-button")[0].innerHTML = document.getElementsByClassName("add-button")[0].innerHTML.replace("Create Conversation", "Loading...");
+					document.getElementsByClassName("add-button")[0].style.padding = "0 20px 0 30px";
+					document.getElementsByClassName("input-field-overlay")[0].style.display = "block";
+					join_conversation();
+					document.getElementsByTagName("title")[0].textContent = get_code() + " - " + "X:/Anonymous";
+					set_remaining_characters();
+				}
+				if(!empty(window.localStorage.getItem("preference-theme")) && window.localStorage.getItem("preference-theme") == "dark") {
+					document.getElementsByClassName("theme-css")[0].href = document.getElementsByClassName("theme-css")[0].href.replace("light", "dark");
+					document.getElementsByClassName("theme-css")[0].setAttribute("data-color", "dark");
+				}
 			}
 			else {
-				document.getElementsByTagName("body")[0].setAttribute("id", "desktop");
-			}
-			if(empty(get_url_query("id"))) {
-				document.getElementsByClassName("add-button-border")[0].style.display = "block";
-				document.getElementsByClassName("add-button")[0].style.display = "block";
-				if(!empty(window.localStorage.getItem("preference-key-size"))) {
-					for(j = 0; j < document.getElementsByClassName("settings-choice key-size").length; j++) {
-						document.getElementsByClassName("settings-choice key-size")[j].classList.remove("active");
-					}
-					document.getElementsByClassName("settings-choice key-size " + window.localStorage.getItem("preference-key-size"))[0].classList.add("active");
-				}
-				if(!empty(window.localStorage.getItem("preference-theme"))) {
-					for(j = 0; j < document.getElementsByClassName("settings-choice theme").length; j++) {
-						document.getElementsByClassName("settings-choice theme")[j].classList.remove("active");
-					}
-					document.getElementsByClassName("settings-choice theme " + window.localStorage.getItem("preference-theme"))[0].classList.add("active");
-				}
-			}
-			else {
-				document.getElementsByClassName("icon-wrapper github")[0].style.display = "none";
-				document.getElementsByClassName("icon-wrapper settings")[0].style.display = "none";
-				document.getElementsByClassName("add-button-border")[0].classList.add("animated");
-				document.getElementsByClassName("add-button")[0].classList.add("disabled");
-				document.getElementsByClassName("add-button")[0].innerHTML = document.getElementsByClassName("add-button")[0].innerHTML.replace("Create Conversation", "Loading...");
-				document.getElementsByClassName("add-button")[0].style.padding = "0 20px 0 30px";
-				document.getElementsByClassName("input-field-overlay")[0].style.display = "block";
-				join_conversation();
-				document.getElementsByTagName("title")[0].textContent = get_code() + " - " + "X:/Anonymous";
+				document.body.innerHTML = "";
+				notify("Error", "Your browser doesn't support HTML5's canvas element.", "theme", 4000);
 			}
 		}
 		else {
-
+			document.body.innerHTML = "";
+			notify("Error", "Your browser doesn't support local storage.", "theme", 4000);
 		}
 	}
 	function detect_mobile() {
 		var check = false;
 		(function(a){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4))) check = true;})(navigator.userAgent||navigator.vendor||window.opera);
 		return check;
+	}
+	// Check if canvas is available.
+	function canvas_available() {
+		var canvas = document.createElement("canvas");
+		return !!(canvas.getContext && canvas.getContext("2d"));
 	}
 	// Check if local storage is supported.
 	function local_storage_available() {
@@ -545,11 +632,24 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			used = 2;
 		}
 		var free = 5120 - used;
-		var space = { used:used, free:free };
+		var space = { used:separate_thousands(used), free:separate_thousands(free) };
 		return space;
 	}
 	// Notification function.
 	function notify(title, description, color, duration) {
+		if(color == "theme") {
+			if(!empty(window.localStorage.getItem("preference-theme"))) {
+				if(window.localStorage.getItem("preference-theme") == "light") {
+					color = "rgb(250,250,250)";
+				}
+				else if(window.localStorage.getItem("preference-theme") == "dark") {
+					color = "rgb(50,50,50)";
+				}
+			}
+			else {
+				color = "rgb(250,250,250)";
+			}
+		}
 		var area = document.createElement("div");
 		area.classList.add("notifiaction-area");
 		area.classList.add("noselect");

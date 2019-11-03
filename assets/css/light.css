@@ -300,6 +300,25 @@ button {
 	fill:url("#gradient-back");
 	shape-rendering:geometricPrecision;
 }
+.icon-wrapper.drive {
+	background:rgb(250,250,250);
+	padding:14px;
+	position:absolute;
+	right:180px;
+	top:20px;
+	border-radius:50%;
+	z-index:10;
+	cursor:pointer;
+	transition:box-shadow 0.25s;
+	box-shadow:var(--shadow-dark);
+}
+.drive-icon {
+	background:none;
+	width:32px;
+	height:32px;
+	fill:url("#gradient-drive");
+	shape-rendering:geometricPrecision;
+}
 .icon-wrapper.share {
 	background:rgb(250,250,250);
 	padding:14px;
@@ -447,20 +466,30 @@ button {
 .input-field {
 	background:rgb(250,250,250);
 	height:63px;
-	padding:0 20px 0 20px;
+	padding:0 70px 0 20px;
 	position:absolute;
 	z-index:3;
 	font-size:16px;
 	color:rgb(100,100,100);
 	left:20px;
 	bottom:20px;
-	width:calc(100% - 164px);
+	width:calc(100% - 164px - 50px);
 	border-radius:30px;
 	transition:box-shadow 0.25s;
 	box-shadow:var(--shadow-dark);
 }
 .input-field:focus {
 	box-shadow:var(--shadow-darker);
+}
+.input-count {
+	position:absolute;
+	bottom:20px;
+	right:102px;
+	line-height:63px;
+	color:#8464f0;
+	z-index:3;
+	padding:0 25px 0 25px;
+	cursor:default;
 }
 .input-field-overlay {
 	background:rgb(250,250,250);
@@ -538,12 +567,29 @@ button {
 	font-size:16px;
 	font-weight:bold;
 	color:rgb(100,100,100);
+	margin-top:10px;
 }
 .notification-description-wrapper {
-	margin-top:10px;
+	margin-top:5px;
 	font-size:14px;
 	color:rgb(100,100,100);
 }
 .notification-description {
 	line-height:25px;
+}
+
+.noscript-label {
+	z-index:9999;
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	padding:0;
+	margin:0;
+	font-size:24px;
+	font-weight:bold;
+	color:rgb(100,100,100);
+	background:rgb(250,250,250);
+	cursor:default;
 }
