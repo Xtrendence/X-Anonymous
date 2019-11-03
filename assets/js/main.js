@@ -238,6 +238,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	// Send message.
 	document.getElementsByClassName("input-button")[0].addEventListener("click", function() {
 		if(!document.getElementsByClassName("input-field")[0].classList.contains("disabled")) {
+			document.getElementsByClassName("input-field")[0].focus();
 			var value = document.getElementsByClassName("input-field")[0].value;
 			if(!empty(value) && !empty(value.trim())) {
 				var max;
@@ -282,7 +283,6 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	});
 	document.addEventListener("keydown", function(e) {
 		if(!document.getElementsByClassName("input-field")[0].classList.contains("disabled")) {
-			document.getElementsByClassName("input-field")[0].focus();
 			var keys_wrapper = document.getElementsByClassName("keys-wrapper")[0];
 			if(keys_wrapper.style.visibility == "visible") {
 				keys_wrapper.style.right = "-320px";
