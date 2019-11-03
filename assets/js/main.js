@@ -335,7 +335,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		var space = local_storage_space();
 		var used = space.used;
 		var free = space.free;
-		var width = Math.ceil((used / free) * 100);
+		var width = Math.ceil((used.replace_all(",", "") / free.replace_all(",", "")) * 100);
 		document.getElementsByClassName("settings-wrapper")[0].getElementsByClassName("settings-storage-foreground")[0].style.width = width + "%";
 		document.getElementsByClassName("settings-wrapper")[0].getElementsByClassName("settings-storage-title")[0].textContent = used + " KBs Used | " + free + " KBs Free";
 		if(used > free - 100) {
@@ -634,6 +634,10 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		var free = 5120 - used;
 		var space = { used:separate_thousands(used), free:separate_thousands(free) };
 		return space;
+	}
+	// Replace all occurrences in a string.
+	String.prototype.replace_all = function(str1, str2, ignore) {
+		return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
 	}
 	// Notification function.
 	function notify(title, description, color, duration) {
