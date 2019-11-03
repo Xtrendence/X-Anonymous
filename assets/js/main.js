@@ -293,6 +293,11 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			}
 		}
 	});
+	window.addEventListener("resize", function() {
+		setTimeout(function() {
+			document.getElementsByClassName("messages-list")[0].scrollTop = document.getElementsByClassName("messages-list")[0].scrollHeight;
+		}, 100);
+	});
 	// Window visibility functionality.
 	var window_hidden;
 	var window_visibility_change; 
