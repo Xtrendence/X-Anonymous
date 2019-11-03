@@ -635,10 +635,6 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		var space = { used:separate_thousands(used), free:separate_thousands(free) };
 		return space;
 	}
-	// Replace all occurrences in a string.
-	String.prototype.replace_all = function(str1, str2, ignore) {
-		return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
-	}
 	// Notification function.
 	function notify(title, description, color, duration) {
 		if(color == "theme") {
@@ -676,4 +672,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		}, duration);
 	}
 });
-	
+// Replace all occurrences in a string.
+String.prototype.replace_all = function(str1, str2, ignore) {
+	return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
+}
