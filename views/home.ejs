@@ -68,8 +68,7 @@
 		</div>
 		<div class="settings-wrapper noselect">
 			<span class="settings-title">RSA Key Size</span>
-			<span class="settings-description">The bigger the key size, the more secure (but slower) the chat app will be. Weaker systems may not even be able to use anything above 2048. 2048 is supposed to be secure until 2030. The smaller the key size, the shorter your messages can be.</span>
-			<button class="settings-choice key-size 1024">1024</button>
+			<span class="settings-description">The bigger the key size, the more secure (but slower) the chat app will be. Weaker systems may not even be able to use anything above 2048. 2048 is supposed to be secure until 2030 - 2040. The smaller the key size, the shorter your messages can be.</span>
 			<button class="settings-choice key-size 2048">2048</button>
 			<button class="settings-choice key-size 3072">3072</button>
 			<button class="settings-choice key-size 4096 active">4096</button>
@@ -77,7 +76,14 @@
 			<button class="settings-choice theme light active">Light</button>
 			<button class="settings-choice theme dark">Dark</button>
 			<span class="settings-title">Local Storage</span>
-			<span class="settings-description">Local storage can store up to 5MBs of data, and when this limit is reached, you'll be notified, at which point you'll have to clear it. Public keys, private keys, anonymous IDs, settings, and conversations are stored in local storage; clearing it would get rid of all of them. You won't be able to use any of your existing conversations.</span>
+			<span class="settings-description">Local storage can store up to 5MBs of data by default on most browsers, and when this limit is reached, you'll be notified, at which point you'll have to clear it. Public keys, private keys, anonymous IDs, settings, and conversations are stored in local storage; clearing it would get rid of all of them. You won't be able to use any of your existing conversations.</span>
+			<div class="settings-storage-wrapper">
+				<span class="settings-storage-title">Calculating...</span>
+				<div class="settings-storage-bar">
+					<div class="settings-storage-background"></div>
+					<div class="settings-storage-foreground"></div>
+				</div>
+			</div>
 			<button class="settings-action clear-storage">Clear</button>
 		</div>
 		<div class="add-page noselect">

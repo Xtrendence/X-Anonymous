@@ -136,7 +136,7 @@ button {
 	font-size:14px;
 	margin-top:20px;
 }
-.settings-choice, .settings-action {
+.settings-choice, .settings-action, .settings-label {
 	display:inline-block;
 	font-size:16px;
 	margin:20px 10px 20px 0;
@@ -154,6 +154,56 @@ button {
 	background:#33b7f6;
 	background:linear-gradient(140deg, #33b7f6 5%, #479df8 20%, #6186f6 25%, #8464f0 35%, #ae57cb 45%, #dc529b 60%, #e35691 65%, #f35c71 80%, #fc5b57 100%);
 	background:-webkit-linear-gradient(140deg, #33b7f6 5%, #479df8 20%, #6186f6 25%, #8464f0 35%, #ae57cb 45%, #dc529b 60%, #e35691 65%, #f35c71 80%, #fc5b57 100%);
+}
+.settings-label {
+	background:rgb(80,80,80);
+	pointer-events:none;
+}
+.settings-storage-wrapper {
+	position:relative;
+	display:block;
+	width:100%;
+	height:auto;
+	padding:10px 0 10px 0;
+}
+.settings-storage-title {
+	font-weight:bold;
+	font-size:14px;
+	color:rgb(100,100,100);
+	display:block;
+	width:100%;
+	margin-top:10px;
+	text-align:center;
+}
+.settings-storage-bar {
+	width:100%;
+	height:20px;
+	border-radius:20px;
+	overflow:hidden;
+	position:relative;
+	display:block;
+	margin-top:20px;
+}
+.settings-storage-background {
+	width:100%;
+	height:100%;
+	background:rgb(40,40,40);
+	position:absolute;
+	top:0;
+	left:0;
+}
+.settings-storage-foreground {
+	width:0;
+	height:100%;
+	background:#33b7f6;
+	background:linear-gradient(140deg, #33b7f6 5%, #479df8 20%, #6186f6 25%, #8464f0 35%, #ae57cb 45%, #dc529b 60%, #e35691 65%, #f35c71 80%, #fc5b57 100%);
+	background:-webkit-linear-gradient(140deg, #33b7f6 5%, #479df8 20%, #6186f6 25%, #8464f0 35%, #ae57cb 45%, #dc529b 60%, #e35691 65%, #f35c71 80%, #fc5b57 100%);
+	position:absolute;
+	top:0;
+	left:0;
+}
+.settings-action.clear-storage {
+	margin-top:10px;
 }
 
 .add-page {

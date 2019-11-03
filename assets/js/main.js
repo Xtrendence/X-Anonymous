@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		document.getElementsByClassName("chat-wrapper")[0].style.display = "block";
 		if(data.save) {
 			window.localStorage.setItem(get_conversation_id() + "anonymous-id", data.anonymous_id);
+			update_local_storage();
 		}
 		if(!empty(get_history())) {
 			var history = JSON.parse(get_history());
@@ -32,6 +33,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		if(!empty(data)) {
 			if(data.public_key != get_public_key()) {
 				window.localStorage.setItem(get_conversation_id() + "recipient-public-key", data.public_key);
+				update_local_storage();
 				document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].value = get_recipient_public_key();
 				document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].style.height = document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].scrollHeight + "px";
 			}
@@ -40,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	socket.on("new-user", function(data) {
 		if(data.public_key != get_public_key()) {
 			window.localStorage.setItem(get_conversation_id() + "recipient-public-key", data.public_key);
+			update_local_storage();
 			document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].value = get_recipient_public_key();
 			document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].style.height = document.getElementsByClassName("keys-wrapper")[0].getElementsByClassName("recipient-public-key")[0].scrollHeight + "px";
 		}
@@ -71,6 +74,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			var id = generate_id();
 			Object.assign(history, { [id]:{ from:from, text:decrypted }});
 			window.localStorage.setItem(get_conversation_id() + "history", JSON.stringify(history));
+			update_local_storage();
 			document.getElementsByClassName("messages-list")[0].scrollTop = document.getElementsByClassName("messages-list")[0].scrollHeight;
 		}
 	});
@@ -122,6 +126,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 					document.getElementsByClassName("settings-choice theme")[j].classList.remove("active");
 				}
 			}
+			update_local_storage();
 			this.classList.add("active");
 		});
 	}
@@ -129,7 +134,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		document.getElementsByClassName("settings-action")[i].addEventListener("click", function() {
 			if(this.classList.contains("clear-storage")) {
 				clear_storage();
-				notify("Done", "Local storage has been cleared.", "rgb(250,250,250)", 4000);
+				notify("Done", "Local storage has been cleared. Refreshing...", "rgb(250,250,250)", 4000);
 			}
 		});
 	}
@@ -301,9 +306,24 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		var recipient_encrypted = encrypt_text(text, get_recipient_public_key());
 		socket.emit("new-message", { conversation_id:get_conversation_id(), [md5(get_public_key())]:sender_encrypted, [md5(get_recipient_public_key())]:recipient_encrypted, from:md5(get_public_key()) });
 	}
-	// Clear Local Storage.
+	// Update local storage monitors.
+	function update_local_storage() {
+		var space = local_storage_space();
+		var used = space.used;
+		var free = space.free;
+		var width = Math.ceil((used / free) * 100);
+		document.getElementsByClassName("settings-wrapper")[0].getElementsByClassName("settings-storage-foreground")[0].style.width = width + "%";
+		document.getElementsByClassName("settings-wrapper")[0].getElementsByClassName("settings-storage-title")[0].textContent = used + " KBs Used | " + free + " KBs Free";
+		if(used > free - 100) {
+			notify("Local Storage", "The local storage is almost full.", "rgb(250,250,250)", 4000);
+		}
+	}
+	// Clear local storage.
 	function clear_storage() {
 		window.localStorage.clear();
+		setTimeout(function() {
+			window.location.reload();
+		}, 4000);
 	}
 	// Get conversation history.
 	function get_history() {
@@ -317,6 +337,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		window.localStorage.setItem(chat_id + "key-size", size);
 		window.localStorage.setItem(chat_id + "public-key", public_key);
 		window.localStorage.setItem(chat_id + "private-key", private_key);
+		update_local_storage();
 		var keys = { public_key:public_key, private_key:private_key };
 		return keys;
 	}
@@ -455,38 +476,44 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		temp.remove();
 	}
 	function initialize() {
-		if(detect_mobile()) {
-			document.getElementsByTagName("body")[0].setAttribute("id", "mobile");
+		if(local_storage_available()) {
+			update_local_storage();
+			if(detect_mobile()) {
+				document.getElementsByTagName("body")[0].setAttribute("id", "mobile");
+			}
+			else {
+				document.getElementsByTagName("body")[0].setAttribute("id", "desktop");
+			}
+			if(empty(get_url_query("id"))) {
+				document.getElementsByClassName("add-button-border")[0].style.display = "block";
+				document.getElementsByClassName("add-button")[0].style.display = "block";
+				if(!empty(window.localStorage.getItem("preference-key-size"))) {
+					for(j = 0; j < document.getElementsByClassName("settings-choice key-size").length; j++) {
+						document.getElementsByClassName("settings-choice key-size")[j].classList.remove("active");
+					}
+					document.getElementsByClassName("settings-choice key-size " + window.localStorage.getItem("preference-key-size"))[0].classList.add("active");
+				}
+				if(!empty(window.localStorage.getItem("preference-theme"))) {
+					for(j = 0; j < document.getElementsByClassName("settings-choice theme").length; j++) {
+						document.getElementsByClassName("settings-choice theme")[j].classList.remove("active");
+					}
+					document.getElementsByClassName("settings-choice theme " + window.localStorage.getItem("preference-theme"))[0].classList.add("active");
+				}
+			}
+			else {
+				document.getElementsByClassName("icon-wrapper github")[0].style.display = "none";
+				document.getElementsByClassName("icon-wrapper settings")[0].style.display = "none";
+				document.getElementsByClassName("add-button-border")[0].classList.add("animated");
+				document.getElementsByClassName("add-button")[0].classList.add("disabled");
+				document.getElementsByClassName("add-button")[0].innerHTML = document.getElementsByClassName("add-button")[0].innerHTML.replace("Create Conversation", "Loading...");
+				document.getElementsByClassName("add-button")[0].style.padding = "0 20px 0 30px";
+				document.getElementsByClassName("input-field-overlay")[0].style.display = "block";
+				join_conversation();
+				document.getElementsByTagName("title")[0].textContent = get_code() + " - " + "X:/Anonymous";
+			}
 		}
 		else {
-			document.getElementsByTagName("body")[0].setAttribute("id", "desktop");
-		}
-		if(empty(get_url_query("id"))) {
-			document.getElementsByClassName("add-button-border")[0].style.display = "block";
-			document.getElementsByClassName("add-button")[0].style.display = "block";
-			if(!empty(window.localStorage.getItem("preference-key-size"))) {
-				for(j = 0; j < document.getElementsByClassName("settings-choice key-size").length; j++) {
-					document.getElementsByClassName("settings-choice key-size")[j].classList.remove("active");
-				}
-				document.getElementsByClassName("settings-choice key-size " + window.localStorage.getItem("preference-key-size"))[0].classList.add("active");
-			}
-			if(!empty(window.localStorage.getItem("preference-theme"))) {
-				for(j = 0; j < document.getElementsByClassName("settings-choice theme").length; j++) {
-					document.getElementsByClassName("settings-choice theme")[j].classList.remove("active");
-				}
-				document.getElementsByClassName("settings-choice theme " + window.localStorage.getItem("preference-theme"))[0].classList.add("active");
-			}
-		}
-		else {
-			document.getElementsByClassName("icon-wrapper github")[0].style.display = "none";
-			document.getElementsByClassName("icon-wrapper settings")[0].style.display = "none";
-			document.getElementsByClassName("add-button-border")[0].classList.add("animated");
-			document.getElementsByClassName("add-button")[0].classList.add("disabled");
-			document.getElementsByClassName("add-button")[0].innerHTML = document.getElementsByClassName("add-button")[0].innerHTML.replace("Create Conversation", "Loading...");
-			document.getElementsByClassName("add-button")[0].style.padding = "0 20px 0 30px";
-			document.getElementsByClassName("input-field-overlay")[0].style.display = "block";
-			join_conversation();
-			document.getElementsByTagName("title")[0].textContent = get_code() + " - " + "X:/Anonymous";
+
 		}
 	}
 	function detect_mobile() {
@@ -494,6 +521,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		(function(a){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4))) check = true;})(navigator.userAgent||navigator.vendor||window.opera);
 		return check;
 	}
+	// Check if local storage is supported.
 	function local_storage_available() {
 		try {
 			window.localStorage.setItem("test", "test");
@@ -503,6 +531,22 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		catch(e) {
 			return false;
 		}
+	}
+	// Check how much free space local storage has.
+	function local_storage_space() {
+		var data = "";
+		for(var key in window.localStorage) {
+			if(window.localStorage.hasOwnProperty(key)) {
+				data += window.localStorage[key];
+			}
+		}
+		var used = (Math.ceil((data.length * 16) / (8 * 1024))).toFixed(0);
+		if(used < 2 && used > 0) {
+			used = 2;
+		}
+		var free = 5120 - used;
+		var space = { used:used, free:free };
+		return space;
 	}
 	// Notification function.
 	function notify(title, description, color, duration) {
