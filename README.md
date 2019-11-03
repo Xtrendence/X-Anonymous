@@ -16,11 +16,13 @@
 2. Open https://glitch.com/edit/#!/remix/clone-from-repo?REPO_URL=https://github.com/Xtrendence/X-Anonymous
 3. Click on "Show" on the top left, and select "In a New Window."
 
-#### Side Note:
+#### Side Notes:
 
-If it doesn't work, once the project has loaded, look for the "package.json" file on the left side of the screen, and click on it. Then click on the "Add Package" button, and click on any packages that show up to download them. If it still doesn't work, then contact me through one of my social media profiles listed at the bottom of my [website](https://www.xtrendence.com).
+* If it doesn't work, once the project has loaded, look for the "package.json" file on the left side of the screen, and click on it. Then click on the "Add Package" button, and click on any packages that show up to download them. If it still doesn't work, then contact me through one of my social media profiles listed at the bottom of my [website](https://www.xtrendence.com).
 
-Also, keep in mind that Glitch automatically shuts down your server after 30 minutes of inactivity.
+* Keep in mind that Glitch automatically shuts down your server after 30 minutes of inactivity.
+
+* Most browser's have a limit of 5MBs of local storage per website. If the storage gets full, new messages and conversations won't be saved. You can keep an eye on it through the settings pane or on the chat page.
 
 ### What does this do?
 
