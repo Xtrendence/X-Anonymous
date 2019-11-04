@@ -22,7 +22,7 @@
 
 * Keep in mind that Glitch automatically shuts down your server after 30 minutes of inactivity.
 
-* Most browser's have a limit of 5MBs of local storage per website. If the storage gets full, new messages and conversations won't be saved. You can keep an eye on it through the settings pane or on the chat page.
+* Most browsers have a limit of 5MBs of local storage per website. If the storage gets full, new messages and conversations won't be saved. You can keep an eye on it through the settings pane or on the chat page.
 
 ### What does this do?
 
