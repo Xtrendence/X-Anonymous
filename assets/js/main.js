@@ -595,6 +595,12 @@ document.addEventListener("DOMContentLoaded", function(e) {
 					document.getElementsByClassName("theme-css")[0].href = document.getElementsByClassName("theme-css")[0].href.replace("light", "dark");
 					document.getElementsByClassName("theme-css")[0].setAttribute("data-color", "dark");
 				}
+				var cache = true;
+				if(!cache) {
+					for(i = 0; i < document.getElementsByTagName("link").length; i++) {
+						document.getElementsByTagName("link")[i].href = document.getElementsByTagName("link")[i].href + "?" + epoch();
+					}
+				}
 			}
 			else {
 				document.body.innerHTML = "";

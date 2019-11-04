@@ -210,7 +210,7 @@ function generate_token() {
 }
 // Generate a conversation ID.
 function generate_conversation_id(key_size, code) {
-	return key_size + "-" + code + "-" + epoch() + generate_token() + generate_token();
+	return key_size + "-" + code + "-" + epoch() + generate_token() + generate_token() + "-" + "cv";
 }
 // Generate an anonymous ID.
 function generate_anonymous_id(conversation_id) {
