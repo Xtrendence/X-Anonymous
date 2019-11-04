@@ -42,6 +42,8 @@ Let's suppose there are two people who want to talk to each other, but what they
 
 ## Terminology
 
+**Local Storage:** A type of web storage used by your browser to store data locally. This is comparable to cookies, but the difference (in terms of privacy) is that the data is never required to be sent to the server. Local storage is an HTML5 feature though, so you'll need a fairly modern browser to use it. 
+
 **Private Key:** Used to decrypt text that has been encrypted with the private key's corresponding public key. Keep this safe as it can decrypt messages.
 
 **Public Key:** Used to encrypt text so that only the person with the correct private key can decrypt it. You don't need to keep this safe, it's already shared with anyone who connects to you.
