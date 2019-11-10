@@ -38,7 +38,7 @@ Pretty much every social media platform has a chat feature, but they all store y
 
 ### Why can't I just use an app like Signal?
 
-You can, and you should, but for regular conversations. Most messaging apps store your conversations on their servers. I believe Signal stores them locally though. For the ones that store them on their servers, they might be encrypted, but they're still stored. X:/Anonymous doesn't even store them. It literally stores nothing but the time at which a conversation was created, its participant's anonymous IDs (randomly generated), and their public keys (also randomly generated). So what's better? Encryption, or no data existing in the first place?
+You can, and you should, but for regular conversations. Most messaging apps store your conversations on their servers. I believe Signal stores them locally though. For the ones that store them on their servers, they might be encrypted, but they're still stored. X:/Anonymous doesn't even store them. It literally stores nothing but the time at which a conversation was created, its participant's anonymous IDs (randomly generated), and their public keys (also randomly generated). So what's better? Encryption, or no data existing in the first place? If you host it on Glitch, they might save the encrypted conversation content, but if you host it on a private domain, then nothing is saved at any point.
 
 ### How does it work?
 
