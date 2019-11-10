@@ -22,6 +22,8 @@
 
 * Keep in mind that Glitch automatically shuts down your server after 30 minutes of inactivity.
 
+* Messages are encrypted using RSA-2048/3072/4096 (depending on which one you choose), so they will have a character limit. The bigger the key size, the stronger the encryption (but the chat app will be slower). In the future, I might just encrypt each message using AES and a random key, and then encrypt the AES key with RSA to bypass any limits, just like how images are encrypted.
+
 * Most browsers have a limit of 5MBs of local storage per website. If the storage gets full, new messages and conversations won't be saved. You can keep an eye on it through the settings pane or on the chat page.
 
 ### What does this do?
