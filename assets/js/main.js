@@ -48,6 +48,22 @@ document.addEventListener("DOMContentLoaded", function(e) {
 		}
 		socket.emit("announce-existence", { conversation_id:get_conversation_id(), public_key:get_public_key() });
 	});
+	socket.on("new-image", function(data) {
+		if(!empty(data)) {
+			var hash = md5(get_public_key());
+			if(hash != data.from) {
+				var decrypted_key = decrypt_text(data.encrypted_key, get_private_key());
+				var decrypted_image = aes_decrypt(data.encrypted_image, decrypted_key);
+				var overlay = document.createElement("div");
+				overlay.classList.add("image-overlay");
+				overlay.innerHTML = '<div class="icon-wrapper close"><svg class="close-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"/><defs><linearGradient id="gradient-close"><stop offset="5%" stop-color="#33b7f6"/><stop offset="20%" stop-color="#479df8"/><stop offset="25%" stop-color="#6186f6"/><stop offset="35%" stop-color="#8464f0"/><stop offset="45%" stop-color="#ae57cb"/><stop offset="60%" stop-color="#dc529b"/><stop offset="65%" stop-color="#e35691"/><stop offset="80%" stop-color="#f35c71"/><stop offset="100%" stop-color="#fc5b57"/></linearGradient></defs></svg></div><div class="image-wrapper"><img src="' + atob(decrypted_image) + '"><span>Images aren\'t even saved in local storage. Once you close this popup, it\'ll be as if the image was never even sent or received.</span></div>';
+				overlay.getElementsByClassName("close-icon")[0].addEventListener("click", function() {
+					overlay.remove();
+				});
+				document.body.appendChild(overlay);
+			}
+		}
+	});
 	socket.on("new-message", function(data) {
 		if(!empty(data)) {
 			var hash = md5(get_public_key());
@@ -85,6 +101,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 				if(document.getElementsByClassName("input-field-overlay")[0].style.display == "block") {
 					document.getElementsByClassName("input-field-overlay")[0].style.display = "none";
 					document.getElementsByClassName("input-field")[0].classList.remove("disabled");
+					document.getElementsByClassName("image-button")[0].classList.remove("disabled");
 					document.getElementsByClassName("input-button")[0].classList.remove("disabled");
 				}
 			}, 500);
@@ -94,6 +111,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 				document.getElementsByClassName("input-field-overlay")[0].style.display = "block";
 				document.getElementsByClassName("input-field")[0].classList.add("disabled");
 				document.getElementsByClassName("input-field")[0].blur();
+				document.getElementsByClassName("image-button")[0].classList.add("disabled");
 				document.getElementsByClassName("input-button")[0].classList.add("disabled");
 			}
 		}
@@ -235,6 +253,31 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			key_size:key_size
 		}));
 	});
+	// Send image.
+	document.getElementsByClassName("image-button")[0].addEventListener("click", function() {
+		if(!document.getElementsByClassName("image-button")[0].classList.contains("disabled")) {
+			var input = document.createElement("input");
+			input.setAttribute("type", "file");
+			input.classList.add("hidden");
+			input.click();
+			input.addEventListener("change", function() {
+				var files = input.files;
+				if(files.length > 0) {
+					var image = files[0];
+					var reader = new FileReader();
+					reader.addEventListener("load", function(e) {
+						var base64 = btoa(e.target.result);
+						var aes_key = generate_hash();
+						var encrypted_image = aes_encrypt(base64, aes_key);
+						var encrypted_key = encrypt_text(aes_key, get_recipient_public_key());
+						send_image(encrypted_image, encrypted_key);
+						input.remove();
+					});
+					reader.readAsDataURL(image);
+				}
+			});
+		}
+	});
 	// Send message.
 	document.getElementsByClassName("input-button")[0].addEventListener("click", function() {
 		if(!document.getElementsByClassName("input-field")[0].classList.contains("disabled")) {
@@ -332,6 +375,10 @@ document.addEventListener("DOMContentLoaded", function(e) {
 			}
 		}, 500);
 	}
+	// Send image.
+	function send_image(encrypted_image, encrypted_key) {
+		socket.emit("new-image", { conversation_id:get_conversation_id(), encrypted_image:encrypted_image.toString(), encrypted_key:encrypted_key, from:md5(get_public_key()) });
+	}
 	// Send message.
 	function send_message(text) {
 		var sender_encrypted = encrypt_text(text, get_public_key());
@@ -360,6 +407,16 @@ document.addEventListener("DOMContentLoaded", function(e) {
 	// Get conversation history.
 	function get_history() {
 		return window.localStorage.getItem(get_conversation_id() + "history");
+	}
+	// Generate hash.
+	function generate_hash() {
+		var result = "";
+		var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+		var charactersLength = characters.length;
+		for(i = 0; i < length; i++) {
+			result += characters.charAt(Math.floor(Math.random() * charactersLength));
+		}
+		return result;
 	}
 	// Generate RSA keys.
 	async function generate_keys(size, chat_id) {

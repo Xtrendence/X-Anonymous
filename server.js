@@ -125,6 +125,34 @@ io.sockets.on("connection", function(socket) {
 			}
 		}
 	});
+	socket.on("new-image", function(data) {
+		if(!empty(data)) {
+			var conversation_file = conversations_folder + generate_conversation_file_name(data.conversation_id) + ".txt";
+			if(fs.existsSync(conversation_file)) {
+				fs.readFile(conversation_file, { encoding:"utf-8" }, function(error, json) {
+					if(error) {
+						console.log(error);
+					}
+					else {
+						if(!empty(json)) {
+							var info = JSON.parse(json);
+							info.time_modified = epoch();
+							if(!empty(info)) {
+								fs.writeFile(conversation_file, JSON.stringify(info), function(error) {
+									if(error) {
+										console.log(error);
+									}
+									else {
+										io.to(data.conversation_id).emit("new-image", data);
+									}
+								});
+							}
+						}
+					}
+				});
+			}
+		}
+	});
 	socket.on("new-message", function(data) {
 		if(!empty(data)) {
 			var conversation_file = conversations_folder + generate_conversation_file_name(data.conversation_id) + ".txt";
