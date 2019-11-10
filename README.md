@@ -1,5 +1,7 @@
 # This project is still in development.
 
+## Cryptographic algorithms and functions used in this project haven't been fully reviewed, so don't use this for any seriously sensitive data. 
+
 ### How to use:
 
 #### Manual:
