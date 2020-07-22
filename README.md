@@ -63,3 +63,5 @@ Probably, but so can anything else. There are already plenty of services that ac
 **Anonymous ID:** Used to differentiate users without having to identify them. Randomly generated. Keep this safe, others may be able to "impersonate" you with it. This isn't shared with the other chat participant.
 
 **Conversation ID:** Used to identify different conversations. Randomly generated.
+
+![X-Anonymous](https://i.imgur.com/uTdp1pb.jpg)
